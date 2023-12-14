@@ -14,5 +14,5 @@ import lombok.ToString;
 public class member {
 	
 	String name;
-
+	String password;
 }
