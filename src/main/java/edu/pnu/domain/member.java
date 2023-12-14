@@ -16,4 +16,5 @@ public class member {
 	String name;
 	String password;
 	Integer num;
+	String cate;
 }
