@@ -17,4 +17,5 @@ public class member {
 	String password;
 	Integer num;
 	String cate;
+	String 아무거나;
 }
