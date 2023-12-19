@@ -1,15 +1,19 @@
 package edu.pnu.config.filter;
 
 import java.io.IOException;
+import java.util.Date;
 
-import org.apache.catalina.User;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.pnu.domain.Member;
@@ -54,8 +58,11 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		
 	// 인증 결과 생성된 Authentication 객체에서 필요한 정보를 읽고 토큰을 만들어서 헤더에 추가함.
 		User user = (User) authResult.getPrincipal();
-//		String token = Jwt
-				
-		
+		String token = JWT.create()
+						.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+						.withClaim("username", user.getUsername())
+						.sign(Algorithm.HMAC256("edu.pnu.jwt"));
+				response.addHeader("Authorization", "Bearer " + token);
+				chain.doFilter(request, response);
 	}
 }

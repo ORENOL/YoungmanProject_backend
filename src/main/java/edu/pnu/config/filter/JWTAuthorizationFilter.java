@@ -1,10 +1,13 @@
 package edu.pnu.config.filter;
 
 import java.io.IOException;
-
 import java.util.Optional;
 
-import org.apache.catalina.User;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
@@ -42,6 +45,12 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 			}
 			Member findmember = opt.get();
 			
-//			User user = new User(findmember.getUsername(), findmember.getPassword();
+			User user = new User(findmember.getUsername(), findmember.getPassword(),
+						AuthorityUtils.createAuthorityList(findmember.getUsername().toString()));
+			
+			Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(auth);
+			chain.doFilter(request, response);
+			
 	}
 }

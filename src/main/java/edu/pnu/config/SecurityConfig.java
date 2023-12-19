@@ -14,9 +14,10 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import edu.pnu.config.filter.JWTAuthenticationFilter;
+import edu.pnu.config.filter.JWTAuthorizationFilter;
 import edu.pnu.persistence.MemberRepository;
 
 @Configuration
@@ -34,22 +35,22 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf->csrf.disable());
 		http.cors(cors->cors.configurationSource(corsFilter()));
 		http.formLogin(frmLogin->frmLogin.disable());
 		http.authorizeHttpRequests(auth->auth
-				.requestMatchers(new AntPathRequestMatcher("/api/user/**")).authenticated()
+				.requestMatchers(new AntPathRequestMatcher("/api/private/**")).authenticated()
 				.anyRequest().permitAll());
 		http.sessionManagement(ssmn->ssmn.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.addFilterBefore(new JWTAuthenticationFilter(memberRepository), AuthorizationFilter.class);
+		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
 		http.addFilter(new JWTAuthenticationFilter(
 						authenticationConfiguration.getAuthenticationManager()));
 		return http.build();
 	}
 	
 	@Bean
-	public CorsConfigurationSource corsFilter() {
+	CorsConfigurationSource corsFilter() {
 		
 		CorsConfiguration config = new CorsConfiguration();
 		config.addAllowedOrigin("http://localhost:3000");
