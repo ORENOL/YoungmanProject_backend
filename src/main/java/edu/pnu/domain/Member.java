@@ -1,6 +1,11 @@
 package edu.pnu.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,11 +16,13 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class member {
-	
-	String name;
+@Entity
+@Builder
+public class Member {
+	//
+	@Id
+	String username;
 	String password;
-	Integer num;
-	String cate;
-	String 아무거나;
+	@Enumerated(EnumType.STRING)
+	private Role role;
 }
