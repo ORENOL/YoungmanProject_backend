@@ -19,7 +19,7 @@ import lombok.ToString;
 @Entity
 @Builder
 public class Member {
-	//
+	////
 	@Id
 	String username;
 	String password;
