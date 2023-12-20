@@ -3,11 +3,11 @@ package edu.pnu.config.filter;
 import java.io.IOException;
 import java.util.Optional;
 
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.auth0.jwt.JWT;
@@ -19,12 +19,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 
-	private final MemberRepository memberRepository;
+	private MemberRepository memberRepository;
+	
+	public JWTAuthorizationFilter(MemberRepository memberRepository) {
+		this.memberRepository = memberRepository;
+	}
 	
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,

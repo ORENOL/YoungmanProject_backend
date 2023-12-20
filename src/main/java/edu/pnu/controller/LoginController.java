@@ -1,13 +1,9 @@
 package edu.pnu.controller;
 
-import org.apache.catalina.connector.Response;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.pnu.domain.Member;
@@ -18,14 +14,17 @@ import edu.pnu.service.LoginService;
 //@RequestMapping("/api/public")
 public class LoginController {
 
-	@Autowired
 	private MemberRepository memberRepository;
 	
-	@Autowired 
 	private LoginService loginService;
 	
-	@Autowired
 	private PasswordEncoder encoder;
+	
+	public LoginController(MemberRepository memberRepository, LoginService loginService, PasswordEncoder encoder) {
+		this.memberRepository = memberRepository;
+		this.loginService = loginService;
+		this.encoder = encoder;
+	}
 	
 	@PostMapping("/login")
 	public ResponseEntity<?> login(){
