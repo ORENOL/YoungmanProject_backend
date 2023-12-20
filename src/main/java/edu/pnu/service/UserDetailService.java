@@ -16,8 +16,12 @@ import edu.pnu.persistence.MemberRepository;
 @Service
 public class UserDetailService implements UserDetailsService {
 	
-	@Autowired
+	
 	private MemberRepository memberRepository;
+	
+	public UserDetailService(MemberRepository memberRepository) {
+		this.memberRepository = memberRepository;
+	}
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

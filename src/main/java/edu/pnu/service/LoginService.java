@@ -12,8 +12,12 @@ import edu.pnu.persistence.MemberRepository;
 @Service
 public class LoginService {
 
-	@Autowired
+
 	private MemberRepository memberRepo;
+	
+	public LoginService(MemberRepository memberRepo) {
+		this.memberRepo = memberRepo;
+	}
 	
 	public ResponseEntity<?> doubleCheck(Member member) {
 		Optional<Member> existMember = memberRepo.findById(member.getUsername());

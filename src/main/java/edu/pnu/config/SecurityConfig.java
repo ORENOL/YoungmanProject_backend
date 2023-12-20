@@ -1,6 +1,5 @@
 package edu.pnu.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -24,11 +23,15 @@ import edu.pnu.persistence.MemberRepository;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	@Autowired
+
 	private MemberRepository memberRepository;
-	
-	@Autowired
+
 	private AuthenticationConfiguration authenticationConfiguration;
+	
+	public SecurityConfig(MemberRepository memberRepository, AuthenticationConfiguration authenticationConfiguration) {
+		this.authenticationConfiguration = authenticationConfiguration;
+		this.memberRepository = memberRepository;
+	}
 	
 	@Bean
 	PasswordEncoder passwordEncoder() {

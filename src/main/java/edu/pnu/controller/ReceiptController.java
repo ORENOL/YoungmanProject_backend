@@ -1,27 +1,19 @@
 package edu.pnu.controller;
 
-import java.util.List;
-
-import org.apache.catalina.connector.Response;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.pnu.domain.Receipt;
 import edu.pnu.service.ReceiptService;
 
 @RestController
 @RequestMapping("api/private/board/")
 public class ReceiptController {
 	
-	@Autowired
-	private ReceiptService boardService;
+	private ReceiptService receiptService;
+	
+	public ReceiptController(ReceiptService receiptService) {
+		this.receiptService = receiptService;
+	}
 
 /*	
 	// 한 페이지 분량의 게시글을 가져옴
