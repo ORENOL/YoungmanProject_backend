@@ -1,9 +1,7 @@
 package edu.pnu.config.filter;
 
-import java.awt.print.Printable;
 import java.io.IOException;
 import java.util.Date;
-
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,13 +20,15 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 // 인증 객체
 public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-	private final AuthenticationManager authenticationManager;
+	private AuthenticationManager authenticationManager;
+	
+	public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
+		this.authenticationManager = authenticationManager;
+	}
 	
 	// POST/login 요청이 왔을 때 인증을 시도하는 메서드
 	@Override
@@ -65,6 +65,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 						.withClaim("username", user.getUsername())
 						.sign(Algorithm.HMAC256("edu.pnu.jwt"));
 				response.addHeader("Authorization", "Bearer " + token);
+				response.addHeader("Username", user.getUsername());
 				chain.doFilter(request, response);
 	}
 }

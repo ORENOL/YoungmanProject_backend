@@ -12,14 +12,13 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Document
 public class Member {
-	////
+
 	@Id
 	String username;
 	String password;

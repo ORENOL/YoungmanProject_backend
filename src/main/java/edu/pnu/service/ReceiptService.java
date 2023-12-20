@@ -8,8 +8,11 @@ import edu.pnu.persistence.ReceiptRepository;
 @Service
 public class ReceiptService {
 
-	@Autowired
-	private ReceiptRepository boardRepo;
+	private ReceiptRepository receiptRepo;
+	
+	public ReceiptService(ReceiptRepository receiptRepo) {
+		this.receiptRepo = receiptRepo;
+	}
 
 //	public Page<Board> getOnePageBoards(int pageNo, String criteria) {
 //		Page<Board> page = boardRepo.findAll(Pageable pageable);
