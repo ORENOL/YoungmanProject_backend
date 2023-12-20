@@ -65,6 +65,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 						.withClaim("username", user.getUsername())
 						.sign(Algorithm.HMAC256("edu.pnu.jwt"));
 				response.addHeader("Authorization", "Bearer " + token);
+				response.addHeader("Username", user.getUsername());
 				chain.doFilter(request, response);
 	}
 }
