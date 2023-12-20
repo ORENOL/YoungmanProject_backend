@@ -53,7 +53,7 @@ public class SecurityConfig {
 	CorsConfigurationSource corsFilter() {
 		
 		CorsConfiguration config = new CorsConfiguration();
-		config.addAllowedOrigin("http://localhost:3000");
+		config.addAllowedOrigin("http://10.125.121.214:3000, http://10.125.121.213:3000, http://localhost:3000");
 		config.addAllowedOriginPattern("*");
 		config.addAllowedMethod(CorsConfiguration.ALL);
 		config.addAllowedHeader(CorsConfiguration.ALL);

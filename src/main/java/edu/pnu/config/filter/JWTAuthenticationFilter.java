@@ -1,5 +1,6 @@
 package edu.pnu.config.filter;
 
+import java.awt.print.Printable;
 import java.io.IOException;
 import java.util.Date;
 
@@ -34,11 +35,12 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
 				throws AuthenticationException{
 		
-			response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+//			response.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
 			ObjectMapper mapper = new ObjectMapper();
 			Member member = null;
 			try {
 				member = mapper.readValue(request.getInputStream(), Member.class);
+				System.out.println(member);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
