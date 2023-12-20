@@ -1,19 +1,17 @@
 package edu.pnu.domain;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import org.springframework.data.annotation.Id;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,16 +20,14 @@ import lombok.Setter;
 public class Receipt {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private long boardId;
-	private String title;
-	private String contents;
+	private long receiptId;
+	private String companyName;
+	private String vendorName;
+	private String companyRegisterNumber;
+	private int price;
+	private LocalDateTime tradeDate;
 	@Builder.Default
 	private Date createDate = new Date();
-	private int viewCount;
-	
-	@ManyToOne
-	private Member member;
 
 
 }
