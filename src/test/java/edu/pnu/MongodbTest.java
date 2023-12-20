@@ -19,7 +19,7 @@ public class MongodbTest {
 	@Test
 	public void InsertMongo() {
 		receiptRepo.save(Receipt.builder()
-				.receiptId(1233)
+				.receiptId(1233231)
 				.companyName("기참")
 				.companyRegisterNumber("1234-3123")
 				.vendorName("김공상")
