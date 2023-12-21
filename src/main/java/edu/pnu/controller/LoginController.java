@@ -53,13 +53,13 @@ public class LoginController {
 	}
 	
 	
-	@Operation(summary = "사용자 회원가입 기능")
+	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
 		return loginService.signup(member);
 	}
 	
-	@Operation(summary = "회원가입시 아이디 중복체크 기능") 
+	@Operation(summary = "회원가입시 아이디 중복체크 기능", description = "Member 객체에는 username 프로퍼티만 입력하면 됩니다.") 
 	@PostMapping("/api/public/doubleCheck")
 	public ResponseEntity<?> doubleCheck(@RequestBody Member member) {
 		return loginService.doubleCheck(member);

@@ -13,8 +13,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @OpenAPIDefinition(
-        info = @Info(title = "User-Service API 명세서",
-                description = "사용자 어플 서비스 API 명세서",
+        info = @Info(title = "영맨 프로젝트 API 명세서",
                 version = "v1"))
 @Configuration
 public class SwaggerConfig {

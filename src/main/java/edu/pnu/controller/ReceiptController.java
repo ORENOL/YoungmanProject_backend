@@ -27,7 +27,7 @@ public class ReceiptController {
 	}
 
 	
-	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.")
+	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.", description = "기본값으로 0번째 페이지에 10개의 데이터를 가져오며, 날짜 내림차순으로 정렬됩니다.<br>정렬 조건값은 Receipt 도메인을 참고해주세요.")
 	@GetMapping("getPageReceipt")
 	public ResponseEntity<?> getPageReceipt(@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria) {
 		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria);
