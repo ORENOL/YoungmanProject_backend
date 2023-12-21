@@ -1,8 +1,11 @@
 package edu.pnu.service;
 
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.Receipt;
@@ -27,8 +30,24 @@ public class ReceiptService {
 		receiptRepo.save(receipt);
 	}
 
-	public void deleteBoard(Receipt receipt) {
-		receiptRepo.delete(receipt);
+	public ResponseEntity<?> deleteBoard(Long receiptId) {
+		
+		try {
+			Optional<Receipt> receipt = receiptRepo.findById(receiptId);
+			
+			if (receipt.isPresent()) {
+				receiptRepo.deleteById(receiptId);
+				return ResponseEntity.ok("delete success");
+			} else {
+				return ResponseEntity.unprocessableEntity().body("not exist receipt");
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return ResponseEntity.internalServerError().body("unexpected Error");
+		
 	}
 
 	

@@ -18,9 +18,10 @@ import edu.pnu.domain.Member;
 import edu.pnu.persistence.MemberRepository;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-//@RequestMapping("/api/public")
+@Tag(name = "로그인 컨트롤러")
 public class LoginController {
 
 	private MemberRepository memberRepository;

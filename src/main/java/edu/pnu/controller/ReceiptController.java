@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.pnu.domain.Receipt;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("api/private/receipt/")
+@Tag(name = "영수증 컨트롤러")
 public class ReceiptController {
 	
 	private ReceiptService receiptService;
@@ -53,19 +55,12 @@ public class ReceiptController {
 		return ResponseEntity.ok("save success");
 	}
 	
-	// 영수증을 삭제함
+
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteBoard")
-	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receipt) {
-		
-		try {
-			receiptService.deleteBoard(receipt);
-		} catch (Exception e) {
-			System.out.println(e.getStackTrace());
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
-	
-		return ResponseEntity.ok("delete success");
+	public ResponseEntity<?> deleteBoard(@RequestParam Long receiptId) {
+			
+		return receiptService.deleteBoard(receiptId);
 	}
 
 }
