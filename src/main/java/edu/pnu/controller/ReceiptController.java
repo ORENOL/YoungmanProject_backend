@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.pnu.domain.Receipt;
 import edu.pnu.service.ReceiptService;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("api/private/receipt/")
@@ -24,7 +25,7 @@ public class ReceiptController {
 	}
 
 	
-	// 한 페이지 분량의 영수증 목록을 가져옴
+	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.")
 	@GetMapping("getPageReceipt")
 	public ResponseEntity<?> getOnePage(@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria) {
 		Page<Receipt> page = receiptService.getOnePageReceipt(pageNo, pageSize, orderCriteria);
@@ -38,7 +39,7 @@ public class ReceiptController {
 //		return ResponseEntity.ok().build();
 //	}
 	
-	// 영수증을 삽입 혹은 업데이트함
+	@Operation(summary = "영수증 정보를 생성하거나 업데이트합니다.")
 	@PostMapping("saveReceipt")
 	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt) {
 		
@@ -53,6 +54,7 @@ public class ReceiptController {
 	}
 	
 	// 영수증을 삭제함
+	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteBoard")
 	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receipt) {
 		

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.pnu.domain.Member;
 import edu.pnu.persistence.MemberRepository;
 import edu.pnu.service.LoginService;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 //@RequestMapping("/api/public")
@@ -31,6 +32,7 @@ public class LoginController {
 		return ResponseEntity.ok("ok");
 	}
 	
+	@Operation(summary = "사용자 회원가입 기능입니다.")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
 		
@@ -50,7 +52,7 @@ public class LoginController {
 		return ResponseEntity.badRequest().build();
 	}
 	
-	// 회원가입시 아이디 중복체크
+	@Operation(summary = "회원가입시 아이디 중복체크 기능입니다.") 
 	@PostMapping("/api/public/doubleCheck")
 	public ResponseEntity<?> doubleCheck(@RequestBody Member member) {
 		return loginService.doubleCheck(member);
