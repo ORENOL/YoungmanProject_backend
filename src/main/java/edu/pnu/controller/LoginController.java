@@ -2,10 +2,8 @@ package edu.pnu.controller;
 
 import java.util.Date;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
-@Tag(name = "로그인 컨트롤러")
+@Tag(name = "로그인 컨트롤러", description = "회원 인증 모듈")
 public class LoginController {
 
 	private MemberRepository memberRepository;
@@ -42,13 +40,13 @@ public class LoginController {
 		return ResponseEntity.ok("ok");
 	}
 	
+	// 개발 전용 api입니다.
 	@Operation(summary = "Swagger 테스트용 JWT 발급 API", description = "Try it out -> Execute 이후 발급된 JWT코드를 우측 상단의 Authorize에 입력하세요.")
 	@PutMapping("/provideJWT")
 	public ResponseEntity<?> provideJWT() {
 
 		String token = JWT.create()
-				.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
-				.withClaim("username", "test1")
+				.withClaim("username", "test2")
 				.sign(Algorithm.HMAC256("edu.pnu.jwt"));
 		
 		return ResponseEntity.ok("Bearer " + token);

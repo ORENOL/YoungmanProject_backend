@@ -20,7 +20,7 @@ public class ReceiptService {
 		this.receiptRepo = receiptRepo;
 	}
 
-	public Page<Receipt> getOnePageReceipt(int pageNo, int pageSize, String orderCriteria) {
+	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria) {
 		Sort sort = Sort.by(Sort.Order.desc(orderCriteria));
 		Page<Receipt> page = receiptRepo.findAll(PageRequest.of(pageNo, pageSize, sort));
 		return page;

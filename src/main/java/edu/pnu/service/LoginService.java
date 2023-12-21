@@ -22,9 +22,9 @@ public class LoginService {
 	public ResponseEntity<?> doubleCheck(Member member) {
 		Optional<Member> existMember = memberRepo.findById(member.getUsername());
 		if (existMember.isPresent()) {
-			return ResponseEntity.status(226).build();
+			return ResponseEntity.status(226).body("id duplication");
 		} else {
-			return ResponseEntity.ok().build();
+			return ResponseEntity.ok("enable id");
 		}
 	}
 

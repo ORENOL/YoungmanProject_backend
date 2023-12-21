@@ -17,7 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("api/private/receipt/")
-@Tag(name = "영수증 컨트롤러")
+@Tag(name = "영수증 컨트롤러", description = "영수증 관리 모듈")
 public class ReceiptController {
 	
 	private ReceiptService receiptService;
@@ -29,8 +29,8 @@ public class ReceiptController {
 	
 	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.")
 	@GetMapping("getPageReceipt")
-	public ResponseEntity<?> getOnePage(@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria) {
-		Page<Receipt> page = receiptService.getOnePageReceipt(pageNo, pageSize, orderCriteria);
+	public ResponseEntity<?> getPageReceipt(@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria) {
+		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria);
 		return ResponseEntity.ok(page);
 	}
 	
@@ -59,7 +59,6 @@ public class ReceiptController {
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteBoard")
 	public ResponseEntity<?> deleteBoard(@RequestParam Long receiptId) {
-			
 		return receiptService.deleteBoard(receiptId);
 	}
 
