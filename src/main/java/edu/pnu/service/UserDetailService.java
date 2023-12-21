@@ -36,6 +36,6 @@ public class UserDetailService implements UserDetailsService {
 		
 		// UserDetails 타입의 객체를 생성해서 리턴
 		return new User(member.getUsername(), member.getPassword(),
-						AuthorityUtils.createAuthorityList(member.getUsername().toString()));
+						AuthorityUtils.createAuthorityList("ROLE_" + member.getRole().toString()));
 	}
 }
