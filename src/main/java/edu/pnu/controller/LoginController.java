@@ -56,21 +56,7 @@ public class LoginController {
 	@Operation(summary = "사용자 회원가입 기능")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
-		
-		try {
-			if(memberRepository.existsById(member.getUsername())) {
-				return ResponseEntity.status(226).build();
-			} else {
-				memberRepository.save(Member.builder()
-						.username(member.getUsername())
-						.password(encoder.encode(member.getPassword()))
-						.build());
-				return ResponseEntity.ok().build();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return ResponseEntity.badRequest().build();
+		return loginService.signup(member);
 	}
 	
 	@Operation(summary = "회원가입시 아이디 중복체크 기능") 
