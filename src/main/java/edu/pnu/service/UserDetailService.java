@@ -2,7 +2,6 @@ package edu.pnu.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,7 +28,7 @@ public class UserDetailService implements UserDetailsService {
 		//memberRepository에서 사용자 정보를 검색
 		Optional<Member> option = memberRepository.findById(username);
 		if (!option.isPresent()) {
-			throw new UsernameNotFoundException("사용자가 없습니다.");
+			throw new UsernameNotFoundException("not exist user");
 		}
 		Member member = memberRepository.findById(username).orElseThrow(()->
 		new UsernameNotFoundException("Not Found!"));

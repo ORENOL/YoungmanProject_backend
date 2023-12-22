@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.Member;
-import edu.pnu.domain.Role;
 import edu.pnu.persistence.MemberRepository;
 
 @Service
@@ -50,7 +49,7 @@ public class MemberService {
 					.role(member.getRole())
 					.build();
 			memberRepo.save(tempMember);
-			return ResponseEntity.ok("권한 변경");
+			return ResponseEntity.ok("authority changed");
 
 		} catch (Exception e) {
 			e.printStackTrace();

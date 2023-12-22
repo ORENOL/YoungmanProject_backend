@@ -2,8 +2,8 @@ package edu.pnu.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,10 +33,15 @@ public class MemberController {
 	
 	@Secured("ROLE_ADMIN")
 	@Operation(summary = "타회원 권한 변경", description = "해당 api는 admin 권한을 필요로 합니다.<br>member 객체에는 username 프로퍼티만 입력하면 됩니다.")
-	
 	@PutMapping("changeAuthority")
 	public ResponseEntity<?> changeAuthority(@RequestBody Member member, Authentication authentication) {
 		return memberService.changeAuthority(member, authentication);
+	}
+	
+	@Operation(summary = "회원 탈퇴 (미구현)", description = "")
+	@DeleteMapping("deleteMember")
+	public ResponseEntity<?> deleteMember() {
+		return null;
 	}
 	
 

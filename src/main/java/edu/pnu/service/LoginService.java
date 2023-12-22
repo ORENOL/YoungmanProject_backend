@@ -2,7 +2,6 @@ package edu.pnu.service;
 
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,9 +52,9 @@ public class LoginService {
 
 	}
 
-	public ResponseEntity<?> findId(String email) {
+	public ResponseEntity<?> findId(Member member) {
 		
-		Optional<Member> existMember = memberRepo.findByEmail(email);
+		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
 		
 		if(!existMember.isPresent()) {
 			return ResponseEntity.unprocessableEntity().body("not exist member");
@@ -64,6 +63,26 @@ public class LoginService {
 		String userId = existMember.get().getUsername();
 		
 		return ResponseEntity.ok(userId);
+	}
+
+	public ResponseEntity<?> findPassword(Member member) {
+		
+		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
+		
+		if(!existMember.isPresent()) {
+			return ResponseEntity.unprocessableEntity().body("not exist member");
+		}
+		
+		Member oldMember = existMember.get();
+		
+		memberRepo.save(Member.builder()
+				.username(oldMember.getUsername())
+				.password(member.getPassword())
+				.role(oldMember.getRole())
+				.email(oldMember.getEmail())
+				.build());
+		
+		return ResponseEntity.ok("password changed");
 	}
 
 }

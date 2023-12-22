@@ -1,21 +1,16 @@
 package edu.pnu.controller;
 
-import java.util.Date;
-
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import edu.pnu.domain.Member;
-import edu.pnu.persistence.MemberRepository;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,16 +19,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "로그인 컨트롤러", description = "회원 인증 모듈")
 public class LoginController {
 
-	private MemberRepository memberRepository;
 	
 	private LoginService loginService;
 	
-	private PasswordEncoder encoder;
-	
-	public LoginController(MemberRepository memberRepository, LoginService loginService, PasswordEncoder encoder) {
-		this.memberRepository = memberRepository;
+	public LoginController(LoginService loginService) {
 		this.loginService = loginService;
-		this.encoder = encoder;
 	}
 	
 	@Operation(summary = "로그인 시 404 Not Found 방지를 위한 API")
@@ -66,9 +56,15 @@ public class LoginController {
 		return loginService.doubleCheck(member);
 	}
 	
-	@Operation(summary = "이메일을 이용한 아이디 찾기 기능", description = "email 쿼리 파라미터만 입력하면 됩니다.")
+	@Operation(summary = "이메일을 이용한 아이디 찾기 기능", description = "Member 객체에는 email 프로퍼티만 입력하면 됩니다.")
 	@GetMapping("/api/public/findId")
-	public ResponseEntity<?> findId(@RequestParam String email) {
-		return loginService.findId(email);
+	public ResponseEntity<?> findId(@RequestBody Member member) {
+		return loginService.findId(member);
+	}
+	
+	@Operation(summary = "이메일을 이용한 비밀번호 변경 기능", description = "Member 객체에는 email, password 프로퍼티만 입력하면 됩니다.")
+	@PutMapping("/api/public/findPassword")
+	public ResponseEntity<?> findPassword(@RequestBody Member member) {
+		return loginService.findPassword(member);
 	}
 }
