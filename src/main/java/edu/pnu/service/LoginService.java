@@ -40,6 +40,7 @@ public class LoginService {
 				memberRepo.save(Member.builder()
 						.username(member.getUsername())
 						.password(encoder.encode(member.getPassword()))
+						.email(member.getEmail())
 						.role(Role.USER)
 						.build());
 				return ResponseEntity.ok().build();
@@ -50,6 +51,19 @@ public class LoginService {
 		}
 		
 
+	}
+
+	public ResponseEntity<?> findId(String email) {
+		
+		Optional<Member> existMember = memberRepo.findByEmail(email);
+		
+		if(!existMember.isPresent()) {
+			return ResponseEntity.unprocessableEntity().body("not exist member");
+		}
+		
+		String userId = existMember.get().getUsername();
+		
+		return ResponseEntity.ok(userId);
 	}
 
 }

@@ -4,9 +4,11 @@ import java.util.Date;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
@@ -51,8 +53,7 @@ public class LoginController {
 		
 		return ResponseEntity.ok("Bearer " + token);
 	}
-	
-	
+
 	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
@@ -63,5 +64,11 @@ public class LoginController {
 	@PostMapping("/api/public/doubleCheck")
 	public ResponseEntity<?> doubleCheck(@RequestBody Member member) {
 		return loginService.doubleCheck(member);
+	}
+	
+	@Operation(summary = "이메일을 이용한 아이디 찾기 기능", description = "email 쿼리 파라미터만 입력하면 됩니다.")
+	@GetMapping("/api/public/findId")
+	public ResponseEntity<?> findId(@RequestParam String email) {
+		return loginService.findId(email);
 	}
 }
