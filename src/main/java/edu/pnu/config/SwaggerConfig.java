@@ -14,6 +14,7 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 
 @OpenAPIDefinition(
         info = @Info(title = "영맨 프로젝트 API 명세서",
+        			description = "임시 개발용 JWT: <br>Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QyIn0.amSnMeIwTumpwJAxv1KFeFQMClJf73gMYth41m7-9Vg\r\n",
                 version = "v1"))
 @Configuration
 public class SwaggerConfig {

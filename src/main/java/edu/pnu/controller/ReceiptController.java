@@ -25,6 +25,12 @@ public class ReceiptController {
 	public ReceiptController(ReceiptService receiptService) {
 		this.receiptService = receiptService;
 	}
+	
+	@Operation(summary = "영수증 전부 가져옵니다. 임시 API")
+	@GetMapping("getAllReceipt")
+	public ResponseEntity<?> getAllReceipt() {
+		return receiptService.getAllReceipt();
+	}
 
 	
 	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.", description = "기본값으로 0번째 페이지에 10개의 데이터를 가져오며, 날짜 내림차순으로 정렬됩니다.<br>정렬 조건값은 Receipt 도메인을 참고해주세요.")

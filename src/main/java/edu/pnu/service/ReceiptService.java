@@ -50,5 +50,9 @@ public class ReceiptService {
 		
 	}
 
+	public ResponseEntity<?> getAllReceipt() {
+		return ResponseEntity.ok(receiptRepo.findAll());
+	}
+
 	
 }
