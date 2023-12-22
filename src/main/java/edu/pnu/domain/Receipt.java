@@ -23,6 +23,9 @@ public class Receipt {
 	private String companyName;
 	private String vendorName;
 	private String companyRegisterNumber;
+	private String item;
+	private int quantity;
+	private int unitPrice;
 	private int price;
 	private LocalDateTime tradeDate;
 	@Builder.Default
