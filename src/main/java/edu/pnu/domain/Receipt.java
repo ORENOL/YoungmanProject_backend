@@ -5,21 +5,21 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class Receipt {
 	
 	@Id
-	private long receiptId;
+	private String receiptId;
 	private String companyName;
 	private String vendorName;
 	private String companyRegisterNumber;

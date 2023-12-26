@@ -1,9 +1,12 @@
 package edu.pnu;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,22 +41,34 @@ public class MongodbTest {
 
         return sb.toString();
     }
+    
+    public static LocalDateTime generateRandomDateTime(LocalDateTime start, LocalDateTime end) {
+        long secondsBetween = ChronoUnit.SECONDS.between(start, end);
+        long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween + 1);
+
+        return start.plusSeconds(randomSeconds);
+    }
 	
 	@Test
 	public void InsertMongo() {
 		Random random = new Random();
+        LocalDateTime startDate = LocalDateTime.of(2020, 1, 1, 0, 0); // 시작 날짜 및 시간
+        LocalDateTime endDate = LocalDateTime.now(); // 현재 날짜 및 시간
+
+       
+
 		for(int i=0; i<100; i++) {
 			int quantity = random.nextInt(20)+1;
 			int unitprice = (random.nextInt(10)+1)*10000;
+	        LocalDateTime randomDateTime = generateRandomDateTime(startDate, endDate);
 			receiptRepo.save(Receipt.builder()
-					.receiptId(i)
 					.companyName("테스트기업"+ i )
 					.item(generateRandomHangul(4))
 					.quantity(quantity)
 					.unitPrice(unitprice)
 					.price(quantity * unitprice)
 					.vendorName(generateRandomHangul(3))
-					.tradeDate(LocalDateTime.parse("2023-11-23T15:30:00"))
+					.tradeDate(randomDateTime)
 					.createDate(new Date())
 					.build());
 		}

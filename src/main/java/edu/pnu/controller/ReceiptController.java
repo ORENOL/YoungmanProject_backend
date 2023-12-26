@@ -26,7 +26,7 @@ public class ReceiptController {
 		this.receiptService = receiptService;
 	}
 	
-	@Operation(summary = "영수증 전부 가져옵니다. 임시 API")
+	@Operation(summary = "영수증 전부 가져옵니다. 개발용 API")
 	@GetMapping("getAllReceipt")
 	public ResponseEntity<?> getAllReceipt() {
 		return receiptService.getAllReceipt();
@@ -35,9 +35,11 @@ public class ReceiptController {
 	
 	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.", description = "기본값으로 0번째 페이지에 10개의 데이터를 가져오며, 날짜 내림차순으로 정렬됩니다.<br>정렬 조건값은 Receipt 도메인을 참고해주세요.")
 	@GetMapping("getPageReceipt")
-	public ResponseEntity<?> getPageReceipt(@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, @RequestParam(defaultValue = "createDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria) {
-		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria);
-		return ResponseEntity.ok(page);
+	public ResponseEntity<?> getPageReceipt(
+			@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, 
+			@RequestParam(defaultValue = "tradeDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria,
+			@RequestParam(required = false) String searchWord) {
+		return receiptService.getPageReceipt(pageNo, pageSize, orderCriteria, searchCriteria, searchWord);
 	}
 	
 //	// 하나의 영수증을 가져옴
@@ -50,22 +52,20 @@ public class ReceiptController {
 	@Operation(summary = "영수증 정보를 생성하거나 업데이트합니다.")
 	@PostMapping("saveReceipt")
 	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt) {
-		
-		try {
-			receiptService.saveReceipt(receipt);
-		} catch (Exception e) {
-			System.out.println(e.getStackTrace());
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
-		
-		return ResponseEntity.ok("save success");
+		return receiptService.saveReceipt(receipt);
 	}
 	
 
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
-	@DeleteMapping("deleteBoard")
-	public ResponseEntity<?> deleteBoard(@RequestParam Long receiptId) {
+	@DeleteMapping("deleteReceipt")
+	public ResponseEntity<?> deleteBoard(@RequestParam String receiptId) {
 		return receiptService.deleteBoard(receiptId);
+	}
+	
+	@Operation(summary = "검색기능 테스트")
+	@GetMapping("searchByStringReceipt")
+	public ResponseEntity<?> searchByStringReceipt(@RequestParam(defaultValue = "companyName") String criteria,@RequestParam String value){
+		return receiptService.searchByStringReceipt(criteria, value);
 	}
 
 }
