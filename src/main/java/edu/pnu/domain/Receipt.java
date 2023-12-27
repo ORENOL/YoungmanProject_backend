@@ -21,8 +21,6 @@ public class Receipt {
 	@Id
 	private String receiptId;
 	private String companyName;
-	private String vendorName;
-	private String companyRegisterNumber;
 	private String item;
 	private int quantity;
 	private int unitPrice;

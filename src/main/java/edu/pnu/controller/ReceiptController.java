@@ -1,6 +1,8 @@
 package edu.pnu.controller;
 
+import java.io.IOException;
 import java.text.ParseException;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -11,12 +13,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.pnu.domain.ApiResponse;
+import edu.pnu.domain.Product;
 import edu.pnu.domain.Receipt;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/private/receipt/")
@@ -67,6 +75,21 @@ public class ReceiptController {
 		receiptService.deleteBoard(receiptId);
 		ApiResponse response = new ApiResponse("delete success");
 		return ResponseEntity.ok(response);
+	}
+	
+	@Operation(summary = "Flask OCR API")
+	@PostMapping("runReceiptOCR")
+	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
+		Flux<Receipt> imageText = receiptService.runReceiptOCR(image);
+		System.out.println("1:" + imageText);
+		
+		imageText.subscribe(
+	            item -> System.out.println(item.toString()), // onNext - 데이터 처리
+	            error -> System.err.println("Error: " + error), // onError - 에러 처리
+	            () -> System.out.println("Done") // onComplete - 완료 처리
+	        );
+		ApiResponse response = new ApiResponse("hi");
+		return ResponseEntity.ok(imageText);
 	}
 
 }
