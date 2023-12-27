@@ -1,5 +1,6 @@
 package edu.pnu.service;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.Receipt;
+import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.ReceiptRepository;
 
 @Service
@@ -30,14 +32,15 @@ public class ReceiptService {
 		this.mongoTemplate = mongoTemplate;
 	}
 
-	public ResponseEntity<?> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchWord) {
+	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchWord) throws ParseException {
 		
 		Sort sort = Sort.by(Sort.Order.desc(orderCriteria));
 		PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
 		System.out.println(searchWord);
+		
 		if (searchWord == null) {
 			Page<Receipt> page = receiptRepo.findAll(pageable);
-			return ResponseEntity.ok(page);
+			return page;
 		}
 		
 		Query query = new Query();
@@ -47,88 +50,55 @@ public class ReceiptService {
 		if (searchCriteria.equals("companyName") || searchCriteria.equals("item")) {
 		    query.addCriteria(Criteria.where(searchCriteria).regex(searchWord, "i"));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
-		    return ResponseEntity.ok(new PageImpl<>(list, pageable, total)); 
+		    return new PageImpl<>(list, pageable, total); 
 		}
 		
 		if (searchCriteria.equals("quantity") || searchCriteria.equals("unitPrice") || searchCriteria.equals("price")) {
-			int number;
-			
-			try {
-				number = Integer.parseInt(searchWord);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return ResponseEntity.internalServerError().body("error occurs: " + e.getMessage());
-			}
-			
+			int number = Integer.parseInt(searchWord);
 			query.addCriteria(Criteria.where(searchCriteria).gte(number));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
-		    return ResponseEntity.ok(new PageImpl<>(list, pageable, total));
+		    return new PageImpl<>(list, pageable, total);
 		}
 		
 		if (searchCriteria.equals("tradeDate") || searchCriteria.equals("createDate")) {
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-			Date startDate;
-			Date endDate;
-			
-			try {
-				String[] parts = searchWord.split("~");
-			    startDate = format.parse(parts[0]);
-			    endDate = format.parse(parts[1]);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return ResponseEntity.internalServerError().body("error occurs: " + e.getMessage());
-			}
+	
+			String[] parts = searchWord.split("~");
+		    Date startDate = format.parse(parts[0]);
+		    Date endDate = format.parse(parts[1]);
+
 	        query.addCriteria(Criteria.where(searchCriteria).gte(startDate).lte(endDate));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
-		    return ResponseEntity.ok(new PageImpl<>(list, pageable, total));
+		    return new PageImpl<>(list, pageable, total);
 		}
-		
 		
 		return null;
 		
 		
 	}
 
-	public ResponseEntity<?> saveReceipt(Receipt receipt) {
-		try {
-			System.out.println(receipt.toString());
-			receiptRepo.save(receipt);
-			return ResponseEntity.ok("save success");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.internalServerError().body("error occurs: " + e.getMessage());
+	public String saveReceipt(Receipt receipt) {
+		Receipt receiptId = receiptRepo.save(receipt);
+		return receiptId.getReceiptId();
+	}
+
+	public void deleteBoard(Receipt receiptId) {
+		
+		System.out.println(receiptId.toString());
+
+		Optional<Receipt> receipt = receiptRepo.findById(receiptId.getReceiptId());
+		
+		if (receipt.isPresent()) {
+			receiptRepo.deleteById(receiptId.getReceiptId());
+			return;
 		}
 		
-	}
-
-	public ResponseEntity<?> deleteBoard(String receiptId) {
-		
-		try {
-			Optional<Receipt> receipt = receiptRepo.findById(receiptId);
-			
-			if (receipt.isPresent()) {
-				receiptRepo.deleteById(receiptId);
-				return ResponseEntity.ok("delete success");
-			} else {
-				return ResponseEntity.unprocessableEntity().body("not exist receipt");
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return ResponseEntity.internalServerError().body("unexpected Error");
+		throw new ResourceNotFoundException("not exist receipt");
 		
 	}
 
-	public ResponseEntity<?> getAllReceipt() {
-		return ResponseEntity.ok(receiptRepo.findAll());
-	}
-
-	public ResponseEntity<?> searchByStringReceipt(String criteria, String value) {
-	    Query query = new Query();
-	    query.addCriteria(Criteria.where(criteria).regex(value, "i"));
-	    return ResponseEntity.ok(mongoTemplate.find(query, Receipt.class)); 
+	public List<Receipt> getAllReceipt() {
+		return receiptRepo.findAll();
 	}
 	
 }

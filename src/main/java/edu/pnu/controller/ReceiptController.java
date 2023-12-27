@@ -1,5 +1,7 @@
 package edu.pnu.controller;
 
+import java.text.ParseException;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import edu.pnu.domain.ApiResponse;
 import edu.pnu.domain.Receipt;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +32,7 @@ public class ReceiptController {
 	@Operation(summary = "영수증 전부 가져옵니다. 개발용 API")
 	@GetMapping("getAllReceipt")
 	public ResponseEntity<?> getAllReceipt() {
-		return receiptService.getAllReceipt();
+		return ResponseEntity.ok(receiptService.getAllReceipt());
 	}
 
 	
@@ -38,8 +41,9 @@ public class ReceiptController {
 	public ResponseEntity<?> getPageReceipt(
 			@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, 
 			@RequestParam(defaultValue = "tradeDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria,
-			@RequestParam(required = false) String searchWord) {
-		return receiptService.getPageReceipt(pageNo, pageSize, orderCriteria, searchCriteria, searchWord);
+			@RequestParam(required = false) String searchWord) throws ParseException {
+		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria, searchCriteria, searchWord);
+		return ResponseEntity.ok(page);
 	}
 	
 //	// 하나의 영수증을 가져옴
@@ -52,20 +56,17 @@ public class ReceiptController {
 	@Operation(summary = "영수증 정보를 생성하거나 업데이트합니다.")
 	@PostMapping("saveReceipt")
 	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt) {
-		return receiptService.saveReceipt(receipt);
+		String receiptid = receiptService.saveReceipt(receipt);
+		return ResponseEntity.ok(receiptid);
 	}
 	
 
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteReceipt")
-	public ResponseEntity<?> deleteBoard(@RequestParam String receiptId) {
-		return receiptService.deleteBoard(receiptId);
-	}
-	
-	@Operation(summary = "검색기능 테스트")
-	@GetMapping("searchByStringReceipt")
-	public ResponseEntity<?> searchByStringReceipt(@RequestParam(defaultValue = "companyName") String criteria,@RequestParam String value){
-		return receiptService.searchByStringReceipt(criteria, value);
+	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receiptId) {
+		receiptService.deleteBoard(receiptId);
+		ApiResponse response = new ApiResponse("delete success");
+		return ResponseEntity.ok(response);
 	}
 
 }

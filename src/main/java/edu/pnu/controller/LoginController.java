@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
+import edu.pnu.domain.ApiResponse;
 import edu.pnu.domain.Member;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +30,7 @@ public class LoginController {
 	@Operation(summary = "로그인 시 404 Not Found 방지를 위한 API")
 	@PostMapping("/login")
 	public ResponseEntity<?> login(){
-		return ResponseEntity.ok("ok");
+		return ResponseEntity.ok().build();
 	}
 	
 	// 개발 전용 api입니다.
@@ -47,24 +48,31 @@ public class LoginController {
 	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
-		return loginService.signup(member);
+		loginService.signup(member);
+	    ApiResponse response = new ApiResponse("signUp success");
+		return ResponseEntity.ok(response);
 	}
 	
 	@Operation(summary = "회원가입시 아이디 중복체크 기능", description = "Member 객체에는 username 프로퍼티만 입력하면 됩니다.") 
 	@PostMapping("/api/public/doubleCheck")
 	public ResponseEntity<?> doubleCheck(@RequestBody Member member) {
-		return loginService.doubleCheck(member);
+		loginService.doubleCheck(member);
+		ApiResponse response = new ApiResponse("good id");
+		return ResponseEntity.ok(response);
 	}
 	
 	@Operation(summary = "이메일을 이용한 아이디 찾기 기능", description = "Member 객체에는 email 프로퍼티만 입력하면 됩니다.")
 	@GetMapping("/api/public/findId")
 	public ResponseEntity<?> findId(@RequestBody Member member) {
-		return loginService.findId(member);
+		String memberId = loginService.findId(member);
+		return ResponseEntity.ok(memberId);
 	}
 	
 	@Operation(summary = "이메일을 이용한 비밀번호 변경 기능", description = "Member 객체에는 email, password 프로퍼티만 입력하면 됩니다.")
 	@PutMapping("/api/public/findPassword")
 	public ResponseEntity<?> findPassword(@RequestBody Member member) {
-		return loginService.findPassword(member);
+		loginService.findPassword(member);
+		ApiResponse response = new ApiResponse("password changed");
+		return ResponseEntity.ok(response);
 	}
 }

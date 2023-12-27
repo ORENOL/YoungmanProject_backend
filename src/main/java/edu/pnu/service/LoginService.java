@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.Member;
 import edu.pnu.domain.Role;
+import edu.pnu.exception.DuplicatedIdException;
+import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.MemberRepository;
 
 @Service
@@ -22,55 +24,49 @@ public class LoginService {
 		this.encoder = encoder;
 	}
 	
-	public ResponseEntity<?> doubleCheck(Member member) {
+	public String doubleCheck(Member member) {
 		Optional<Member> existMember = memberRepo.findById(member.getUsername());
 		if (existMember.isPresent()) {
-			return ResponseEntity.status(226).body("id duplication");
-		} else {
-			return ResponseEntity.ok("enable id");
-		}
-	}
-
-	public ResponseEntity<?> signup(Member member) {
-		try {
-			if(memberRepo.existsById(member.getUsername())) {
-				return ResponseEntity.status(226).build();
-			} else {
-				memberRepo.save(Member.builder()
-						.username(member.getUsername())
-						.password(encoder.encode(member.getPassword()))
-						.email(member.getEmail())
-						.role(Role.USER)
-						.build());
-				return ResponseEntity.ok().build();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.internalServerError().body("unexpected error occurs: " + e.getMessage());
-		}
+			throw new DuplicatedIdException("duplicated id");
+		} 
+		return null;
 		
-
 	}
 
-	public ResponseEntity<?> findId(Member member) {
+	public void signup(Member member) {	
+		
+		if (memberRepo.existsById(member.getUsername())) {
+			throw new DuplicatedIdException("duplicated id");
+		} 
+		
+		memberRepo.save(Member.builder().username(member.getUsername())
+				.password(encoder.encode(member.getPassword()))
+				.email(member.getEmail())
+				.role(Role.USER)
+				.build());
+		return;
+		
+		
+	}
+
+	public String findId(Member member) {
 		
 		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
 		
 		if(!existMember.isPresent()) {
-			return ResponseEntity.unprocessableEntity().body("not exist member");
+			throw new ResourceNotFoundException("not exist member");
 		}
 		
 		String userId = existMember.get().getUsername();
-		
-		return ResponseEntity.ok(userId);
+		return userId;
 	}
 
-	public ResponseEntity<?> findPassword(Member member) {
+	public void findPassword(Member member) {
 		
 		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
 		
 		if(!existMember.isPresent()) {
-			return ResponseEntity.unprocessableEntity().body("not exist member");
+			throw new ResourceNotFoundException("not exist member");
 		}
 		
 		Member oldMember = existMember.get();
@@ -82,7 +78,7 @@ public class LoginService {
 				.email(oldMember.getEmail())
 				.build());
 		
-		return ResponseEntity.ok("password changed");
+		return;
 	}
 
 }

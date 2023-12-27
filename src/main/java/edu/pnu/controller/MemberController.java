@@ -28,14 +28,16 @@ public class MemberController {
 	@Operation(summary = "회원 비밀번호 변경", description = "member 객체에는 password 프로퍼티만 입력하면 됩니다.")
 	@PutMapping("changePassword")
 	public ResponseEntity<?> changePassword(@RequestBody Member member, Authentication authentication) {
-		return memberService.changePassword(member, authentication);
+		memberService.changePassword(member, authentication);
+		return ResponseEntity.ok("password changed");
 	}
 	
 	@Secured("ROLE_ADMIN")
 	@Operation(summary = "타회원 권한 변경", description = "해당 api는 admin 권한을 필요로 합니다.<br>member 객체에는 username 프로퍼티만 입력하면 됩니다.")
 	@PutMapping("changeAuthority")
 	public ResponseEntity<?> changeAuthority(@RequestBody Member member, Authentication authentication) {
-		return memberService.changeAuthority(member, authentication);
+		memberService.changeAuthority(member, authentication);
+		return  ResponseEntity.ok("authority changed");
 	}
 	
 	@Operation(summary = "회원 탈퇴 (미구현)", description = "")

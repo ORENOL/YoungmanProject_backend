@@ -22,39 +22,30 @@ public class MemberService {
 		this.encoder = encoder;
 	}
 
-	public ResponseEntity<?> changePassword(Member member, Authentication authentication) {
+	public void changePassword(Member member, Authentication authentication) {
 		
-		try {
-			Optional<Member> existMember = memberRepo.findById(authentication.getName());
-			Member tempMember = Member.builder()
-					.username(authentication.getName())
-					.password(encoder.encode(member.getPassword()))
-					.role(existMember.get().getRole())
-					.build();
-			memberRepo.save(tempMember);
-			return ResponseEntity.ok("password change success");
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.internalServerError().body("unexpected error occurs: " + e.getMessage());
-		}
+		Optional<Member> existMember = memberRepo.findById(authentication.getName());
+		Member tempMember = Member.builder()
+				.username(authentication.getName())
+				.password(encoder.encode(member.getPassword()))
+				.role(existMember.get().getRole())
+				.build();
+		memberRepo.save(tempMember);
+		return;
 
 	}
 
-	public ResponseEntity<?> changeAuthority(Member member, Authentication authentication) {
-		try {
-			Optional<Member> existMember = memberRepo.findById(authentication.getName());
-			Member tempMember = Member.builder()
-					.username(member.getUsername())
-					.password(existMember.get().getPassword())
-					.role(member.getRole())
-					.build();
-			memberRepo.save(tempMember);
-			return ResponseEntity.ok("authority changed");
+	public void changeAuthority(Member member, Authentication authentication) {
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.internalServerError().body("unexpected error occurs: " + e.getMessage());
-		}
+		Optional<Member> existMember = memberRepo.findById(authentication.getName());
+		Member tempMember = Member.builder()
+				.username(member.getUsername())
+				.password(existMember.get().getPassword())
+				.role(member.getRole())
+				.build();
+		memberRepo.save(tempMember);
+		return;
+
 
 	}
 
