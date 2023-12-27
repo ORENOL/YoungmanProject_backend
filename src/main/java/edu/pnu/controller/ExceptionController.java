@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import edu.pnu.domain.ApiResponse;
 import edu.pnu.exception.DuplicatedIdException;
+import edu.pnu.exception.ExpiredCodeException;
 import edu.pnu.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
@@ -20,6 +21,12 @@ public class ExceptionController {
 	
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<?> ResourceNotFoundException(ResourceNotFoundException e) {
+		ApiResponse response = new ApiResponse(e.getMessage());
+		return ResponseEntity.status(422).body(response);
+	}
+	
+	@ExceptionHandler(ExpiredCodeException.class)
+	public ResponseEntity<?> ExpiredCodeException(ExpiredCodeException e) {
 		ApiResponse response = new ApiResponse(e.getMessage());
 		return ResponseEntity.status(422).body(response);
 	}

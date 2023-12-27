@@ -12,6 +12,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
 import edu.pnu.domain.ApiResponse;
+import edu.pnu.domain.Code;
 import edu.pnu.domain.Member;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,7 +64,7 @@ public class LoginController {
 	}
 	
 	@Operation(summary = "이메일을 이용한 아이디 찾기 기능", description = "Member 객체에는 email 프로퍼티만 입력하면 됩니다.")
-	@GetMapping("/api/public/findId")
+	@PostMapping("/api/public/findId")
 	public ResponseEntity<?> findId(@RequestBody Member member) {
 		String memberId = loginService.findId(member);
 		return ResponseEntity.ok(memberId);
@@ -81,6 +82,20 @@ public class LoginController {
 	@PostMapping("/api/public/verifyEmail")
 	public ResponseEntity<?> verifyEmail(@RequestBody Member member) {
 		loginService.verifyEmail(member);
+		return ResponseEntity.ok(null);
+	}
+	
+	@Operation(summary = "검증코드 발송 API")
+	@PostMapping("/api/public/sendCodeToMail")
+	public ResponseEntity<?> sendCodeToMail(@RequestBody Member member) {
+		loginService.sendCodeToMail(member);
+		return ResponseEntity.ok(null);
+	}
+	
+	@Operation(summary = "검증코드 유효성 검사 API", description = "Code 객체에는 codeNumber 프로퍼티만 입력하면 됩니다.")
+	@PostMapping("/api/public/verifyCode")
+	public ResponseEntity<?> verifyCode(@RequestBody Code code) {
+		loginService.verifyCode(code);
 		return ResponseEntity.ok(null);
 	}
 }
