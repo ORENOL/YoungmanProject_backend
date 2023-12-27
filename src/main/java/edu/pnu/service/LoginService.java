@@ -38,7 +38,8 @@ public class LoginService {
 			throw new DuplicatedIdException("duplicated id");
 		} 
 		
-		memberRepo.save(Member.builder().username(member.getUsername())
+		memberRepo.save(Member.builder()
+				.username(member.getUsername())
 				.password(encoder.encode(member.getPassword()))
 				.email(member.getEmail())
 				.role(Role.USER)
@@ -63,11 +64,6 @@ public class LoginService {
 	public void findPassword(Member member) {
 		
 		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
-		
-		if(!existMember.isPresent()) {
-			throw new ResourceNotFoundException("not exist member");
-		}
-		
 		Member oldMember = existMember.get();
 		
 		memberRepo.save(Member.builder()
@@ -76,8 +72,19 @@ public class LoginService {
 				.role(oldMember.getRole())
 				.email(oldMember.getEmail())
 				.build());
+		return;
+	}
+
+	public void verifyEmail(Member member) {
+
+		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
+		
+		if(!existMember.isPresent()) {
+			throw new ResourceNotFoundException("not exist member");
+		}
 		
 		return;
+		
 	}
 
 }

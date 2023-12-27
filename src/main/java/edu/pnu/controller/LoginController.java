@@ -1,5 +1,6 @@
 package edu.pnu.controller;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,7 +46,7 @@ public class LoginController {
 		return ResponseEntity.ok("Bearer " + token);
 	}
 
-	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password 프로퍼티만 입력하면 됩니다.")
+	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password, email 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/signup")
 	public ResponseEntity<?> signup(@RequestBody Member member){
 		loginService.signup(member);
@@ -68,11 +69,18 @@ public class LoginController {
 		return ResponseEntity.ok(memberId);
 	}
 	
-	@Operation(summary = "이메일을 이용한 비밀번호 변경 기능", description = "Member 객체에는 email, password 프로퍼티만 입력하면 됩니다.")
+	@Operation(summary = "비밀번호 변경 기능", description = "Member 객체에는 password 프로퍼티만 입력하면 됩니다.")
 	@PutMapping("/api/public/findPassword")
 	public ResponseEntity<?> findPassword(@RequestBody Member member) {
 		loginService.findPassword(member);
 		ApiResponse response = new ApiResponse("password changed");
 		return ResponseEntity.ok(response);
+	}
+	
+	@Operation(summary = "이메일 검증 API")
+	@PostMapping("/api/public/verifyEmail")
+	public ResponseEntity<?> verifyEmail(@RequestBody Member member) {
+		loginService.verifyEmail(member);
+		return ResponseEntity.ok(null);
 	}
 }
