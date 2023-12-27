@@ -2,6 +2,8 @@ package edu.pnu.controller;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -18,8 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import edu.pnu.domain.ApiResponse;
-import edu.pnu.domain.Product;
+import edu.pnu.domain.Code;
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.ReceiptPOJO;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -80,11 +83,10 @@ public class ReceiptController {
 	@Operation(summary = "Flask OCR API")
 	@PostMapping("runReceiptOCR")
 	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
-		Flux<Receipt> imageText = receiptService.runReceiptOCR(image);
-		System.out.println("1:" + imageText);
-		
+		Flux<ReceiptPOJO> imageText = receiptService.runReceiptOCR(image);
+
 		imageText.subscribe(
-	            item -> System.out.println(item.toString()), // onNext - 데이터 처리
+	            item -> System.out.println(Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
 	            error -> System.err.println("Error: " + error), // onError - 에러 처리
 	            () -> System.out.println("Done") // onComplete - 완료 처리
 	        );

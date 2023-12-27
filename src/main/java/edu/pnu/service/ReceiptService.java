@@ -23,8 +23,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import edu.pnu.domain.Product;
+import edu.pnu.domain.Code;
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.ReceiptPOJO;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.ReceiptRepository;
 import reactor.core.publisher.Flux;
@@ -114,7 +115,7 @@ public class ReceiptService {
 		return receiptRepo.findAll();
 	}
 
-	public Flux<Receipt> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
+	public Flux<ReceiptPOJO> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
         Path tempFile = Paths.get(System.getProperty("java.io.tmpdir"), image.getOriginalFilename());
         image.transferTo(tempFile.toFile());
         System.out.println(image);
@@ -123,7 +124,7 @@ public class ReceiptService {
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .bodyValue(new FileSystemResource(tempFile.toFile()))
                 .retrieve()
-                .bodyToFlux(Receipt.class)
+                .bodyToFlux(ReceiptPOJO.class)
                 .doFinally(signalType -> tempFile.toFile().delete());
     }
 	
