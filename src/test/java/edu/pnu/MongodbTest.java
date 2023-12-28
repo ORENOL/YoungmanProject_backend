@@ -67,7 +67,6 @@ public class MongodbTest {
 					.quantity(quantity)
 					.unitPrice(unitprice)
 					.price(quantity * unitprice)
-					.vendorName(generateRandomHangul(3))
 					.tradeDate(randomDateTime)
 					.createDate(new Date())
 					.build());

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,8 +20,11 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserter;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import edu.pnu.domain.Code;
@@ -116,16 +120,22 @@ public class ReceiptService {
 	}
 
 	public Flux<ReceiptPOJO> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
-        Path tempFile = Paths.get(System.getProperty("java.io.tmpdir"), image.getOriginalFilename());
-        image.transferTo(tempFile.toFile());
-        System.out.println(image);
+//        Path tempFile = Paths.get(System.getProperty("java.io.tmpdir"), image.getOriginalFilename());
+//        image.transferTo(tempFile.toFile());
+		ByteArrayResource byteArrayResource = new ByteArrayResource(image.getBytes()) {
+			@Override
+			public String getFilename() {
+                return image.getOriginalFilename();
+            }
+		};
+      
         return webclient.post()
-                .uri("http://10.125.121.211:8080/")
+                .uri("http://10.125.121.211:5000/")
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-                .bodyValue(new FileSystemResource(tempFile.toFile()))
+                .body(BodyInserters.fromMultipartData("image", byteArrayResource))
                 .retrieve()
-                .bodyToFlux(ReceiptPOJO.class)
-                .doFinally(signalType -> tempFile.toFile().delete());
+                .bodyToFlux(ReceiptPOJO.class);
+//                .doFinally(signalType -> tempFile.toFile().delete());
     }
 	
 }
