@@ -19,10 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import edu.pnu.domain.ApiResponse;
 import edu.pnu.domain.Code;
 import edu.pnu.domain.Receipt;
-import edu.pnu.domain.ReceiptPOJO;
+import edu.pnu.domain.dto.ApiResponse;
+import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

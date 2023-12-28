@@ -1,4 +1,4 @@
-package edu.pnu.domain;
+package edu.pnu.domain.dto;
 
 import java.util.Date;
 
