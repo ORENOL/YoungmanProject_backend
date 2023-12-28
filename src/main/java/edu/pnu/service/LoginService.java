@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.Code;
 import edu.pnu.domain.Member;
-import edu.pnu.domain.Role;
+import edu.pnu.domain.enums.Role;
 import edu.pnu.exception.DuplicatedIdException;
 import edu.pnu.exception.ExpiredCodeException;
 import edu.pnu.exception.ResourceNotFoundException;

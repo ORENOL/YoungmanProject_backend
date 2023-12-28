@@ -1,4 +1,4 @@
-package edu.pnu.domain;
+package edu.pnu.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
