@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import edu.pnu.domain.Code;
 import edu.pnu.domain.Receipt;
-import edu.pnu.domain.ReceiptPOJO;
+import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.ReceiptRepository;
 import reactor.core.publisher.Flux;

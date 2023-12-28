@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-import edu.pnu.domain.ApiResponse;
 import edu.pnu.domain.Code;
 import edu.pnu.domain.Member;
+import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

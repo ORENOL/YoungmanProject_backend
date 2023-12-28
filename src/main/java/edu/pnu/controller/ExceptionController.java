@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import edu.pnu.domain.ApiResponse;
+import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.exception.DuplicatedIdException;
 import edu.pnu.exception.ExpiredCodeException;
 import edu.pnu.exception.ResourceNotFoundException;
