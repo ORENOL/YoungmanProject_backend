@@ -46,9 +46,15 @@ public class LoginService {
 
 	public void signup(Member member) {	
 		
+		
 		if (memberRepo.existsById(member.getUsername())) {
 			throw new DuplicatedIdException("duplicated id");
 		} 
+		
+		if (member.getUsername().isEmpty() || member.getEmail().isEmpty() || member.getPassword().isEmpty()) {
+			throw new ResourceNotFoundException("not fill in field");
+		}
+		
 		
 		memberRepo.save(Member.builder()
 				.username(member.getUsername())
