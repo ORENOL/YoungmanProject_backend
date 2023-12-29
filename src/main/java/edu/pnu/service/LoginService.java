@@ -125,18 +125,32 @@ public class LoginService {
 	public void sendCodeToMail(Member member) {
 		Optional<Member> existMember = memberRepo.findByEmail(member.getEmail());
 		
+		if(!existMember.isPresent()) {
+			throw new ResourceNotFoundException("not exist member");
+		}
+		
+		Member tempMember = existMember.get();
+		
 		Random random = new Random();
 		
-		int code = random.nextInt(900000) + 100000;
+		// 인증코드 난수 생성 (digit = 자릿수)
+		int digit = 6;
+		digit = (int) Math.pow(10, digit-1);
+		System.out.println(digit);
+		int code = random.nextInt(9 * digit) + digit;
 		SimpleMailMessage mail = new SimpleMailMessage();
 		
+		// 인증코드 생성 (timeToExpired = 만료기간[분])
+		int timeToExpired = 15;
 		codeRepo.save(Code.builder()
+				.email(tempMember.getEmail())
 				.codeNumber(code)
+				.expiredTime(LocalDateTime.now().plusMinutes(timeToExpired))	
 				.build());
 		
-		mail.setTo(existMember.get().getEmail());
+		mail.setTo(tempMember.getEmail());
 		mail.setSubject("Youngman프로젝트 비밀번호 인증코드입니다.");
-		mail.setText("코드:" + code);
+		mail.setText("인증코드: " + code);
 		mailSender.send(mail);
 	}
 

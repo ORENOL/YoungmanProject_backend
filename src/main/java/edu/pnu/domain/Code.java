@@ -17,8 +17,7 @@ import lombok.ToString;
 @Builder
 public class Code {
 		@Id
-		private String id;
+		private String email;
 	    private Integer codeNumber;
-	    @Builder.Default
-	    private LocalDateTime expiredTime = LocalDateTime.now().plusMinutes(15);
+	    private LocalDateTime expiredTime;
 }
