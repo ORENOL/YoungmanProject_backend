@@ -46,14 +46,13 @@ public class LoginService {
 	public void signup(Member member) {	
 		
 		
-		if (memberRepo.existsById(member.getUsername())) {
-			throw new DuplicatedIdException("duplicated id");
+		if (memberRepo.existsById(member.getUsername()) || memberRepo.existsByEmail(member.getEmail())) {
+			throw new DuplicatedIdException("duplicated id/email");
 		} 
 		
 		if (member.getUsername().isEmpty() || member.getEmail().isEmpty() || member.getPassword().isEmpty()) {
 			throw new ResourceNotFoundException("not fill in field");
 		}
-		
 		
 		memberRepo.save(Member.builder()
 				.username(member.getUsername())
@@ -136,7 +135,6 @@ public class LoginService {
 		// 인증코드 난수 생성 (digit = 자릿수)
 		int digit = 6;
 		digit = (int) Math.pow(10, digit-1);
-		System.out.println(digit);
 		int code = random.nextInt(9 * digit) + digit;
 		SimpleMailMessage mail = new SimpleMailMessage();
 		

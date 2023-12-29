@@ -1,7 +1,7 @@
 package edu.pnu.controller;
 
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -29,6 +29,12 @@ public class ExceptionController {
 	public ResponseEntity<?> ExpiredCodeException(ExpiredCodeException e) {
 		ApiResponse response = new ApiResponse(e.getMessage());
 		return ResponseEntity.status(422).body(response);
+	}
+	
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<?> MethodArgumentNotValidException(MethodArgumentNotValidException e) {
+		ApiResponse response = new ApiResponse(e.getMessage());
+		return ResponseEntity.status(400).body(response);
 	}
 	
 	@ExceptionHandler(Exception.class)
