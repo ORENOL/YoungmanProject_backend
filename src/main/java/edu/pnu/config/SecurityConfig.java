@@ -11,7 +11,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.header.writers.ContentSecurityPolicyHeaderWriter;
+import org.springframework.security.web.header.writers.StaticHeadersWriter;
+import org.springframework.security.web.header.writers.frameoptions.StaticAllowFromStrategy;
+import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -45,6 +48,7 @@ public class SecurityConfig {
 		http.csrf(csrf->csrf.disable());
 		http.cors(cors->cors.configurationSource(corsFilter()));
 		http.formLogin(frmLogin->frmLogin.disable());
+		http.httpBasic(basic->basic.disable());
 		http.authorizeHttpRequests(auth->auth
 				.requestMatchers("/api/private/**").authenticated()
 				.anyRequest().permitAll());
@@ -52,6 +56,10 @@ public class SecurityConfig {
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
 		http.addFilter(new JWTAuthenticationFilter(
 						authenticationConfiguration.getAuthenticationManager()));
+		
+        http.headers(head->head.addHeaderWriter(new ContentSecurityPolicyHeaderWriter("default-src 'self'")));
+
+
 		return http.build();
 	}
 	
@@ -59,8 +67,9 @@ public class SecurityConfig {
 	CorsConfigurationSource corsFilter() {
 		
 		CorsConfiguration config = new CorsConfiguration();
-		config.addAllowedOrigin("http://10.125.121.214:3000, http://10.125.121.213:3000, http://localhost:3000");
-		config.addAllowedOriginPattern("*");
+		config.addAllowedOrigin("http://10.125.121.214:3000");
+		config.addAllowedOrigin("http://10.125.121.223:3000");
+//		config.addAllowedOriginPattern("*");
 		config.addAllowedMethod(CorsConfiguration.ALL);
 		config.addAllowedHeader(CorsConfiguration.ALL);
 		config.setAllowCredentials(true);
