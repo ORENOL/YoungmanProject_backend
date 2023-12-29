@@ -46,7 +46,7 @@ public class SecurityConfig {
 		http.cors(cors->cors.configurationSource(corsFilter()));
 		http.formLogin(frmLogin->frmLogin.disable());
 		http.authorizeHttpRequests(auth->auth
-				.requestMatchers(new AntPathRequestMatcher("/api/private/**")).authenticated()
+				.requestMatchers("/api/private/**").authenticated()
 				.anyRequest().permitAll());
 		http.sessionManagement(ssmn->ssmn.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
