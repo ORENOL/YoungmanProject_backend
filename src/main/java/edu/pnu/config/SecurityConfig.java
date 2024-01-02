@@ -66,7 +66,7 @@ public class SecurityConfig {
 		CorsConfiguration config = new CorsConfiguration();
 		config.addAllowedOrigin("http://10.125.121.214:3000");
 		config.addAllowedOrigin("http://10.125.121.223:3000");
-//		config.addAllowedOriginPattern("*");
+		config.addAllowedOriginPattern("*");
 		config.addAllowedMethod(CorsConfiguration.ALL);
 		config.addAllowedHeader(CorsConfiguration.ALL);
 		config.setAllowCredentials(true);

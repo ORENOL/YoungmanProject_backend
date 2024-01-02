@@ -91,6 +91,11 @@ public class ReceiptService {
 		Receipt receiptId = receiptRepo.save(receipt);
 		return receiptId.getReceiptId();
 	}
+	
+	public String saveListReceipt(List<Receipt> receipt) {
+		receiptRepo.saveAll(receipt);
+		return null;
+	}
 
 	public void deleteBoard(Receipt receiptId) {
 		
@@ -129,5 +134,7 @@ public class ReceiptService {
                 .bodyToFlux(ReceiptPOJO.class);
 //                .doFinally(signalType -> tempFile.toFile().delete());
     }
+
+
 	
 }

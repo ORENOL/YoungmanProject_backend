@@ -21,9 +21,9 @@ public class ReceiptPOJO {
 	private String receiptId;
 	private String companyName;
 	private String item;
-	private int quantity;
-	private int unitPrice;
-	private int price;
+	private String quantity;
+	private String unitPrice;
+	private String price;
 	private String tradeDate;
 	@Builder.Default
 	private Date createDate = new Date();

@@ -2,7 +2,7 @@ package edu.pnu.controller;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -65,6 +65,13 @@ public class ReceiptController {
 		return ResponseEntity.ok(receiptid);
 	}
 	
+	@Operation(summary = "영수증 정보를 리스트로 받아 한번에 저장합니다.")
+	@PostMapping("saveListReceipt")
+	public ResponseEntity<?> saveListReceipt(@RequestBody List<Receipt> receipt) {
+		String receiptid = receiptService.saveListReceipt(receipt);
+		return ResponseEntity.ok(receiptid);
+	}
+	
 
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteReceipt")
@@ -74,17 +81,22 @@ public class ReceiptController {
 		return ResponseEntity.ok(response);
 	}
 	
+	
+	
 	@Operation(summary = "Flask OCR API")
 	@PostMapping("runReceiptOCR")
 	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
 		Flux<ReceiptPOJO> imageText = receiptService.runReceiptOCR(image);
-
-		imageText.subscribe(
-	            item -> System.out.println(Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
-	            error -> System.err.println("Error: " + error), // onError - 에러 처리
-	            () -> System.out.println("Done") // onComplete - 완료 처리
-	        );
-		return ResponseEntity.ok(imageText);
+	    List<ReceiptPOJO> receipts = imageText.collectList().block();
+	    System.out.println(receipts.toString());
+//		imageText.subscribe(
+//	            item -> System.out.println(
+//	            		item.toString()),
+////	            		Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
+//	            error -> System.err.println("Error: " + error), // onError - 에러 처리
+//	            () -> System.out.println("Done") // onComplete - 완료 처리
+//	        );
+		return ResponseEntity.ok(receipts);
 	}
 
 }
