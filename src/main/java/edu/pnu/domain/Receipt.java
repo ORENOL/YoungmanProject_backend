@@ -28,6 +28,7 @@ public class Receipt {
 	private LocalDateTime tradeDate;
 	@Builder.Default
 	private Date createDate = new Date();
+	private String receiptDocumentId;
 
 
 }

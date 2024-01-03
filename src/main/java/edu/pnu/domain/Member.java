@@ -21,7 +21,7 @@ public class Member {
 
 	@Id
 	@Pattern(regexp = "^[A-Za-z0-9]{5,10}$")
-	String username;
+	private String username;
 	
 	@Pattern(regexp = "^[A-Za-z0-9]{5,10}$")
 	String password;
@@ -29,5 +29,5 @@ public class Member {
 	private Role role;
 	
 	@Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
-	String email;
+	private String email;
 }
