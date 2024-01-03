@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import edu.pnu.domain.OriginReceipt;
 import edu.pnu.domain.Receipt;
 import edu.pnu.domain.dto.ApiResponse;
-import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +43,7 @@ public class ReceiptController {
 	}
 
 	
-	@Operation(summary = "페이지네이션된 영수증 정보를 가져옵니다.", description = "기본값으로 0번째 페이지에 10개의 데이터를 가져오며, 날짜 내림차순으로 정렬됩니다.<br>정렬 조건값은 Receipt 도메인을 참고해주세요.")
+	@Operation(summary = "페이지네이션된 영수증 정보를 가져오며, 검색기능을 제공합니다.", description = "기본값으로 0번째 페이지에 10개의 데이터를 가져오며, 날짜 내림차순으로 정렬됩니다.<br>정렬 조건값은 Receipt 도메인을 참고해주세요.")
 	@GetMapping("getPageReceipt")
 	public ResponseEntity<?> getPageReceipt(
 			@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, 
@@ -70,8 +70,8 @@ public class ReceiptController {
 	@Operation(summary = "영수증 정보를 리스트로 받아 한번에 저장합니다.")
 	@PostMapping("saveListReceipt")
 	public ResponseEntity<?> saveListReceipt(@RequestBody List<Receipt> receipt) {
-		String receiptid = receiptService.saveListReceipt(receipt);
-		return ResponseEntity.ok(receiptid);
+		receiptService.saveListReceipt(receipt);
+		return ResponseEntity.ok().build();
 	}
 	
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
@@ -85,7 +85,7 @@ public class ReceiptController {
 	@Operation(summary = "Flask OCR API", description = "이미지를 업로드하면 서버로컬에 이미지를 저장하고 OCR Text를 가공한 Receipt JSON을 반환합니다.")
 	@PostMapping("runReceiptOCR")
 	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
-		List<ReceiptPOJO> receiptList = receiptService.runReceiptOCR(image);
+		List<OriginReceipt> receiptList = receiptService.runReceiptOCR(image);
 		return ResponseEntity.ok(receiptList);
 	}
 	
@@ -96,6 +96,13 @@ public class ReceiptController {
 		MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
 		String mediaType = fileTypeMap.getContentType(img.getFile());
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(mediaType)).body(img);
+	}
+	
+	@Operation(summary = "지정한 영수증 데이터에 연결된 원본 데이터를 가져옵니다.")
+	@GetMapping("getOriginReceipt")
+	public ResponseEntity<?> getOriginReceipt(@RequestParam String originReceiptId) throws IOException {
+		OriginReceipt originReceipt = receiptService.getOriginReceipt(originReceiptId);
+		return ResponseEntity.ok(originReceipt);
 	}
 
 }

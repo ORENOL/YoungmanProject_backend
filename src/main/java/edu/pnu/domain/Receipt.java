@@ -29,6 +29,6 @@ public class Receipt {
 	@Builder.Default
 	private Date createDate = new Date();
 	private String receiptDocumentId;
-
+	private String originReceiptId;
 
 }

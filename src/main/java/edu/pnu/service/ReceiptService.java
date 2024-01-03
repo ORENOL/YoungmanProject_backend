@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,10 +33,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import edu.pnu.domain.OriginReceipt;
 import edu.pnu.domain.Receipt;
 import edu.pnu.domain.ReceiptDocument;
-import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.exception.ResourceNotFoundException;
+import edu.pnu.persistence.OriginReceiptRepository;
 import edu.pnu.persistence.ReceiptDocumentRepository;
 import edu.pnu.persistence.ReceiptRepository;
 import reactor.core.publisher.Flux;
@@ -45,11 +48,13 @@ public class ReceiptService {
 	private MongoTemplate mongoTemplate;
 	private ReceiptRepository receiptRepo;
 	private ReceiptDocumentRepository receiptDocumentRepo;
+	private OriginReceiptRepository originReceiptRepository;
 	private WebClient webclient;
 	
-	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, MongoTemplate mongoTemplate, WebClient webclient) {
+	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient) {
 		this.receiptRepo = receiptRepo;
 		this.receiptDocumentRepo = receiptDocumentRepo;
+		this.originReceiptRepository = originReceiptRepository;
 		this.mongoTemplate = mongoTemplate;
 		this.webclient = webclient;
 	}
@@ -69,12 +74,14 @@ public class ReceiptService {
 		query.with(pageable);
 		long total = mongoTemplate.count(query, Receipt.class);
 		
+		// 회사이름 또는 품명 검색
 		if (searchCriteria.equals("companyName") || searchCriteria.equals("item")) {
 		    query.addCriteria(Criteria.where(searchCriteria).regex(searchWord, "i"));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
 		    return new PageImpl<>(list, pageable, total); 
 		}
 		
+		// 수량 또는 단가 또는 금액 검색
 		if (searchCriteria.equals("quantity") || searchCriteria.equals("unitPrice") || searchCriteria.equals("price")) {
 			int number = Integer.parseInt(searchWord);
 			query.addCriteria(Criteria.where(searchCriteria).gte(number));
@@ -82,15 +89,72 @@ public class ReceiptService {
 		    return new PageImpl<>(list, pageable, total);
 		}
 		
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		// 날짜 검색
 		if (searchCriteria.equals("tradeDate") || searchCriteria.equals("createDate")) {
-			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-	
+			
 			String[] parts = searchWord.split("~");
 		    Date startDate = format.parse(parts[0]);
 		    Date endDate = format.parse(parts[1]);
 
 	        query.addCriteria(Criteria.where(searchCriteria).gte(startDate).lte(endDate));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
+		    return new PageImpl<>(list, pageable, total);
+		}
+		
+		Criteria criteria = new Criteria();
+		
+		// 회사이름 & 품명 검색
+		if (searchCriteria.equals("companyName&item")) {
+			String[] keyword = searchWord.split("&");
+			criteria.andOperator(Criteria.where("companyName").regex(keyword[0], "i"), 
+									Criteria.where("item").regex(keyword[1], "i"));
+			query.addCriteria(criteria);
+		    List<Receipt> list = mongoTemplate.find(query, Receipt.class);
+		    return new PageImpl<>(list, pageable, total); 
+		}
+		
+		// 날짜 & 회사이름 검색
+		if (searchCriteria.equals("tradeDate&companyName")) {
+			String[] keyword = searchWord.split("&");
+			
+			String[] dateParts = keyword[0].split("~");
+		    Date startDate = format.parse(dateParts[0]);
+		    Date endDate = format.parse(dateParts[1]);
+		    
+			criteria.andOperator(Criteria.where("tradeDate").gte(startDate).lte(endDate),
+									Criteria.where("companyName").regex(keyword[1], "i"));
+			query.addCriteria(criteria);
+			List<Receipt> list = mongoTemplate.find(query, Receipt.class);
+		    return new PageImpl<>(list, pageable, total);
+		}
+		// 날짜 & 품명 검색
+		if (searchCriteria.equals("tradeDate&item")) {
+			String[] keyword = searchWord.split("&");
+			
+			String[] dateParts = keyword[0].split("~");
+		    Date startDate = format.parse(dateParts[0]);
+		    Date endDate = format.parse(dateParts[1]);
+		    
+			criteria.andOperator(Criteria.where("tradeDate").gte(startDate).lte(endDate),
+									Criteria.where("item").regex(keyword[1], "i"));
+			query.addCriteria(criteria);
+			List<Receipt> list = mongoTemplate.find(query, Receipt.class);
+		    return new PageImpl<>(list, pageable, total);
+		}
+		// 날짜 & 회사이름 & 품명 검색
+		if (searchCriteria.equals("tradeDate&companyName&item")) {
+			String[] keyword = searchWord.split("&");
+			
+			String[] dateParts = keyword[0].split("~");
+		    Date startDate = format.parse(dateParts[0]);
+		    Date endDate = format.parse(dateParts[1]);
+		    
+			criteria.andOperator(Criteria.where("tradeDate").gte(startDate).lte(endDate),
+									Criteria.where("companyName").regex(keyword[1], "i"),
+									Criteria.where("item").regex(keyword[2], "i"));
+			query.addCriteria(criteria);
+			List<Receipt> list = mongoTemplate.find(query, Receipt.class);
 		    return new PageImpl<>(list, pageable, total);
 		}
 		
@@ -104,9 +168,24 @@ public class ReceiptService {
 		return receiptId.getReceiptId();
 	}
 	
-	public String saveListReceipt(List<Receipt> receipt) {
-		receiptRepo.saveAll(receipt);
-		return null;
+	public void saveListReceipt(List<Receipt> receipt) {
+		List<Receipt> receiptList = new ArrayList<>();
+	    for (Receipt data : receipt) {
+	    	Receipt temp = Receipt.builder()
+	    				.companyName(data.getCompanyName())
+	    				.item(data.getItem())
+	    				.quantity(data.getQuantity())
+	    				.unitPrice(data.getUnitPrice())
+	    				.price(data.getPrice())
+	    				.tradeDate(data.getTradeDate())
+	    				.createDate(data.getCreateDate())
+	    				.receiptDocumentId(data.getReceiptDocumentId())
+	    				.originReceiptId(data.getReceiptId())
+	    				.build();
+	    	receiptList.add(temp);
+	    }
+		receiptRepo.saveAll(receiptList);
+		return;
 	}
 
 	public void deleteBoard(Receipt receiptId) {
@@ -128,7 +207,7 @@ public class ReceiptService {
 		return receiptRepo.findAll();
 	}
 
-	public List<ReceiptPOJO> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
+	public List<OriginReceipt> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
 		
 		ByteArrayResource byteArrayResource = new ByteArrayResource(image.getBytes()) {
 			@Override
@@ -137,14 +216,14 @@ public class ReceiptService {
             }
 		};
       
-		Flux<ReceiptPOJO> imageText = webclient.post()
+		Flux<OriginReceipt> imageText = webclient.post()
         .uri("http://10.125.121.211:5000/")
         .contentType(MediaType.MULTIPART_FORM_DATA)
         .body(BodyInserters.fromMultipartData("image", byteArrayResource))
         .retrieve()
-        .bodyToFlux(ReceiptPOJO.class);
+        .bodyToFlux(OriginReceipt.class);
 		
-	    List<ReceiptPOJO> receipts = imageText.collectList().block();
+	    List<OriginReceipt> receipts = imageText.collectList().block();
 
 //		imageText.subscribe(
 //        item -> System.out.println(
@@ -168,10 +247,10 @@ public class ReceiptService {
 	    String documentId = receiptDocumentRepo.save(ReceiptDocument.builder()
 	    												.imgPath(path.toString())
 	    												.build()).getId();
-	    List<ReceiptPOJO> receiptList = new ArrayList<>();
+	    List<OriginReceipt> receiptList = new ArrayList<>();
 	    
-	    for (ReceiptPOJO data : receipts) {
-	    	ReceiptPOJO temp = ReceiptPOJO.builder()
+	    for (OriginReceipt data : receipts) {
+	    	OriginReceipt temp = OriginReceipt.builder()
 	    				.companyName(data.getCompanyName())
 	    				.item(data.getItem())
 	    				.quantity(data.getQuantity())
@@ -183,7 +262,7 @@ public class ReceiptService {
 	    				.build();
 	    	receiptList.add(temp);
 	    }
-	    
+	    originReceiptRepository.saveAll(receiptList);
 	    return receiptList;
     }
 
@@ -205,6 +284,14 @@ public class ReceiptService {
 		}
 		
 		return resource;
+	}
+
+	public OriginReceipt getOriginReceipt(String originReceiptId) {
+		Optional<OriginReceipt> existOriginReceipt = originReceiptRepository.findById(originReceiptId);
+		if (!existOriginReceipt.isPresent()) {
+			throw new ResourceNotFoundException("not exist originReceipt");
+		}
+		return existOriginReceipt.get();
 	}
 
 

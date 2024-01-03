@@ -1,4 +1,4 @@
-package edu.pnu.domain.dto;
+package edu.pnu.domain;
 
 import java.util.Date;
 
@@ -15,7 +15,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
-public class ReceiptPOJO {
+public class OriginReceipt {
 	
 	@Id
 	private String receiptId;
