@@ -27,6 +27,7 @@ public class MemberService {
 		Member tempMember = Member.builder()
 				.username(authentication.getName())
 				.password(encoder.encode(member.getPassword()))
+				.email(existMember.get().getEmail())
 				.role(existMember.get().getRole())
 				.build();
 		memberRepo.save(tempMember);
@@ -40,6 +41,7 @@ public class MemberService {
 		Member tempMember = Member.builder()
 				.username(member.getUsername())
 				.password(existMember.get().getPassword())
+				.email(existMember.get().getEmail())
 				.role(member.getRole())
 				.build();
 		memberRepo.save(tempMember);
