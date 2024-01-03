@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -184,6 +186,26 @@ public class ReceiptService {
 	    
 	    return receiptList;
     }
+
+	public Resource getReceiptImage(String receiptDocumentId) throws MalformedURLException {
+		
+		Optional<ReceiptDocument> existDocument = receiptDocumentRepo.findById(receiptDocumentId);
+		
+		if(!existDocument.isPresent()) {
+			throw new ResourceNotFoundException("not exist ReceiptDocument");
+		}
+		
+		String imgPath = existDocument.get().getImgPath();
+		
+		Path path = Paths.get(imgPath);
+		Resource resource = new UrlResource(path.toUri());
+		
+		if(!resource.exists() || !resource.isReadable()) {
+			throw new ResourceNotFoundException("not exist img");
+		}
+		
+		return resource;
+	}
 
 
 	

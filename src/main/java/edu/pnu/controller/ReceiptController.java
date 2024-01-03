@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,13 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.pnu.domain.Receipt;
-import edu.pnu.domain.ReceiptDocument;
 import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.service.ReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import reactor.core.publisher.Flux;
+import jakarta.activation.MimetypesFileTypeMap;
 
 @RestController
 @RequestMapping("api/private/receipt/")
@@ -73,7 +74,6 @@ public class ReceiptController {
 		return ResponseEntity.ok(receiptid);
 	}
 	
-
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("deleteReceipt")
 	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receiptId) {
@@ -82,13 +82,20 @@ public class ReceiptController {
 		return ResponseEntity.ok(response);
 	}
 	
-	
-	
 	@Operation(summary = "Flask OCR API", description = "이미지를 업로드하면 서버로컬에 이미지를 저장하고 OCR Text를 가공한 Receipt JSON을 반환합니다.")
 	@PostMapping("runReceiptOCR")
 	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
 		List<ReceiptPOJO> receiptList = receiptService.runReceiptOCR(image);
 		return ResponseEntity.ok(receiptList);
+	}
+	
+	@Operation(summary = "지정한 영수증 데이터에 연결된 사진을 가져옵니다.")
+	@GetMapping("getReceiptImage")
+	public ResponseEntity<?> getReceiptImage(@RequestParam String receiptDocumentId) throws IOException {
+		Resource img = receiptService.getReceiptImage(receiptDocumentId);
+		MimetypesFileTypeMap fileTypeMap = new MimetypesFileTypeMap();
+		String mediaType = fileTypeMap.getContentType(img.getFile());
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(mediaType)).body(img);
 	}
 
 }
