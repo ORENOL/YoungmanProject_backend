@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.ReceiptDocument;
 import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.service.ReceiptService;
@@ -83,20 +84,11 @@ public class ReceiptController {
 	
 	
 	
-	@Operation(summary = "Flask OCR API")
+	@Operation(summary = "Flask OCR API", description = "이미지를 업로드하면 서버로컬에 이미지를 저장하고 OCR Text를 가공한 Receipt JSON을 반환합니다.")
 	@PostMapping("runReceiptOCR")
 	public ResponseEntity<?> runReceiptOCR(@RequestParam MultipartFile image) throws IllegalStateException, IOException {
-		Flux<ReceiptPOJO> imageText = receiptService.runReceiptOCR(image);
-	    List<ReceiptPOJO> receipts = imageText.collectList().block();
-	    System.out.println(receipts.toString());
-//		imageText.subscribe(
-//	            item -> System.out.println(
-//	            		item.toString()),
-////	            		Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
-//	            error -> System.err.println("Error: " + error), // onError - 에러 처리
-//	            () -> System.out.println("Done") // onComplete - 완료 처리
-//	        );
-		return ResponseEntity.ok(receipts);
+		List<ReceiptPOJO> receiptList = receiptService.runReceiptOCR(image);
+		return ResponseEntity.ok(receiptList);
 	}
 
 }

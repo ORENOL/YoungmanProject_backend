@@ -27,6 +27,7 @@ public class ReceiptPOJO {
 	private String tradeDate;
 	@Builder.Default
 	private Date createDate = new Date();
+	private String receiptDocumentId;
 
 
 }

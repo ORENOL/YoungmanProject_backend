@@ -1,8 +1,16 @@
 package edu.pnu.service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +30,10 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.ReceiptDocument;
 import edu.pnu.domain.dto.ReceiptPOJO;
 import edu.pnu.exception.ResourceNotFoundException;
+import edu.pnu.persistence.ReceiptDocumentRepository;
 import edu.pnu.persistence.ReceiptRepository;
 import reactor.core.publisher.Flux;
 
@@ -31,13 +41,13 @@ import reactor.core.publisher.Flux;
 public class ReceiptService {
 	
 	private MongoTemplate mongoTemplate;
-
 	private ReceiptRepository receiptRepo;
-	
+	private ReceiptDocumentRepository receiptDocumentRepo;
 	private WebClient webclient;
 	
-	public ReceiptService(ReceiptRepository receiptRepo, MongoTemplate mongoTemplate, WebClient webclient) {
+	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, MongoTemplate mongoTemplate, WebClient webclient) {
 		this.receiptRepo = receiptRepo;
+		this.receiptDocumentRepo = receiptDocumentRepo;
 		this.mongoTemplate = mongoTemplate;
 		this.webclient = webclient;
 	}
@@ -116,9 +126,8 @@ public class ReceiptService {
 		return receiptRepo.findAll();
 	}
 
-	public Flux<ReceiptPOJO> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
-//        Path tempFile = Paths.get(System.getProperty("java.io.tmpdir"), image.getOriginalFilename());
-//        image.transferTo(tempFile.toFile());
+	public List<ReceiptPOJO> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
+		
 		ByteArrayResource byteArrayResource = new ByteArrayResource(image.getBytes()) {
 			@Override
 			public String getFilename() {
@@ -126,13 +135,54 @@ public class ReceiptService {
             }
 		};
       
-        return webclient.post()
-                .uri("http://10.125.121.211:5000/")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("image", byteArrayResource))
-                .retrieve()
-                .bodyToFlux(ReceiptPOJO.class);
-//                .doFinally(signalType -> tempFile.toFile().delete());
+		Flux<ReceiptPOJO> imageText = webclient.post()
+        .uri("http://10.125.121.211:5000/")
+        .contentType(MediaType.MULTIPART_FORM_DATA)
+        .body(BodyInserters.fromMultipartData("image", byteArrayResource))
+        .retrieve()
+        .bodyToFlux(ReceiptPOJO.class);
+		
+	    List<ReceiptPOJO> receipts = imageText.collectList().block();
+
+//		imageText.subscribe(
+//        item -> System.out.println(
+//        		item.toString()),
+////        		Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
+//        error -> System.err.println("Error: " + error), // onError - 에러 처리
+//        () -> System.out.println("Done") // onComplete - 완료 처리
+//    );
+	    String userHomeDir = System.getProperty("user.home");
+	    String imgDir = userHomeDir + File.separator + "Youngman";
+	    Path path = Paths.get(imgDir + File.separator + image.getOriginalFilename());
+	    
+	    if(!Files.exists(path)) {
+	    	Files.createDirectories(path.getParent());
+	    }
+	    
+	    OutputStream os = new FileOutputStream(path.toFile());
+	    os.write(image.getBytes());
+	    os.close();
+	    
+	    String documentId = receiptDocumentRepo.save(ReceiptDocument.builder()
+	    												.imgPath(path.toString())
+	    												.build()).getId();
+	    List<ReceiptPOJO> receiptList = new ArrayList<>();
+	    
+	    for (ReceiptPOJO data : receipts) {
+	    	ReceiptPOJO temp = ReceiptPOJO.builder()
+	    				.companyName(data.getCompanyName())
+	    				.item(data.getItem())
+	    				.quantity(data.getQuantity())
+	    				.unitPrice(data.getUnitPrice())
+	    				.price(data.getPrice())
+	    				.tradeDate(data.getTradeDate())
+	    				.createDate(data.getCreateDate())
+	    				.receiptDocumentId(documentId)
+	    				.build();
+	    	receiptList.add(temp);
+	    }
+	    
+	    return receiptList;
     }
 
 
