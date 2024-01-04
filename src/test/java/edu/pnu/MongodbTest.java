@@ -79,4 +79,9 @@ public class MongodbTest {
 		Optional<Member> member = memberRepo.findById("test2");
 		System.out.println(member.get().toString());
 	}
+	
+	@Test
+	public void deleteMongO() {
+		receiptRepo.deleteByCompanyNameContaining("테스트기업");
+	}
 }
