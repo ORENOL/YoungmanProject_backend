@@ -4,11 +4,11 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
-import edu.pnu.domain.Code;
+import edu.pnu.domain.VerificationCode;
 
 
-public interface CodeRepository extends MongoRepository<Code, String> {
+public interface VerificationCodeRepository extends MongoRepository<VerificationCode, String> {
 	
-	Optional<Code> findByCodeNumber(Integer codeNumber);
+	Optional<VerificationCode> findByCodeNumber(Integer codeNumber);
 
 }

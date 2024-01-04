@@ -1,5 +1,5 @@
 package edu.pnu.domain.enums;
 
 public enum Role {
-	ADMIN, USER
+	ADMIN, USER, WAITING
 }

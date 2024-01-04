@@ -19,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import edu.pnu.config.filter.JWTAuthenticationFilter;
 import edu.pnu.config.filter.JWTAuthorizationFilter;
+import edu.pnu.domain.enums.Role;
 import edu.pnu.persistence.MemberRepository;
 
 @Configuration
@@ -47,7 +48,8 @@ public class SecurityConfig {
 		http.formLogin(frmLogin->frmLogin.disable());
 		http.httpBasic(basic->basic.disable());
 		http.authorizeHttpRequests(auth->auth
-				.requestMatchers("/api/private/**").authenticated()
+				.requestMatchers("/api/private/**").hasAnyRole("USER", "ADMIN")
+				.requestMatchers("/api/admin/**").hasRole("ADMIN")
 				.anyRequest().permitAll());
 		http.sessionManagement(ssmn->ssmn.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
@@ -72,6 +74,7 @@ public class SecurityConfig {
 		config.setAllowCredentials(true);
 		config.addExposedHeader("Authorization");
 		config.addExposedHeader("Username");
+		config.addExposedHeader("Role");
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
 		return source;

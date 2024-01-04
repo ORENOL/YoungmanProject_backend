@@ -15,7 +15,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Code {
+public class VerificationCode {
 		@Id
 		private String email;
 	    private Integer codeNumber;

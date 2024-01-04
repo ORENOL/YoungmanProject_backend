@@ -9,13 +9,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import edu.pnu.domain.Code;
+import edu.pnu.domain.VerificationCode;
 import edu.pnu.domain.Member;
 import edu.pnu.domain.enums.Role;
 import edu.pnu.exception.DuplicatedIdException;
 import edu.pnu.exception.ExpiredCodeException;
 import edu.pnu.exception.ResourceNotFoundException;
-import edu.pnu.persistence.CodeRepository;
+import edu.pnu.persistence.VerificationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
 
 @Service
@@ -25,9 +25,9 @@ public class LoginService {
 	private MemberRepository memberRepo;
 	private PasswordEncoder encoder;
 	private JavaMailSender mailSender;
-	private CodeRepository codeRepo;
+	private VerificationCodeRepository codeRepo;
 	
-	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, JavaMailSender mailSender, CodeRepository codeRepo) {
+	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, JavaMailSender mailSender, VerificationCodeRepository codeRepo) {
 		this.memberRepo = memberRepo;
 		this.encoder = encoder;
 		this.mailSender = mailSender;
@@ -60,7 +60,8 @@ public class LoginService {
 				.username(member.getUsername())
 				.password(encoder.encode(member.getPassword()))
 				.email(member.getEmail())
-				.role(Role.USER)
+				.role(Role.WAITING)
+				.association(member.getAssociation())
 				.build());
 		return;
 		
@@ -105,9 +106,9 @@ public class LoginService {
 		
 	}
 
-	public void verifyCode(Code code) {
+	public void verifyCode(VerificationCode code) {
 		
-		Optional<Code> existCode = codeRepo.findByCodeNumber(code.getCodeNumber());
+		Optional<VerificationCode> existCode = codeRepo.findByCodeNumber(code.getCodeNumber());
 		
 		if(!existCode.isPresent()) {
 			throw new ResourceNotFoundException("not exist code");
@@ -140,7 +141,7 @@ public class LoginService {
 		
 		// 인증코드 생성 (timeToExpired = 만료기간[분])
 		int timeToExpired = 15;
-		codeRepo.save(Code.builder()
+		codeRepo.save(VerificationCode.builder()
 				.email(tempMember.getEmail())
 				.codeNumber(code)
 				.expiredTime(LocalDateTime.now().plusMinutes(timeToExpired))	

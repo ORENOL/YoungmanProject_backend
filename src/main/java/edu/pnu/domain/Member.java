@@ -16,7 +16,6 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Document
 public class Member {
 
 	@Id
@@ -30,4 +29,6 @@ public class Member {
 	
 	@Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
 	private String email;
+	
+	private String association;
 }

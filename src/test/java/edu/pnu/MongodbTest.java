@@ -81,7 +81,7 @@ public class MongodbTest {
 	}
 	
 	@Test
-	public void deleteMongO() {
+	public void deleteMongo() {
 		receiptRepo.deleteByCompanyNameContaining("테스트기업");
 	}
 }

@@ -5,7 +5,6 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

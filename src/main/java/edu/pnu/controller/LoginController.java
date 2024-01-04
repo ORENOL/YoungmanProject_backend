@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-import edu.pnu.domain.Code;
+import edu.pnu.domain.VerificationCode;
 import edu.pnu.domain.Member;
 import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.service.LoginService;
@@ -93,7 +93,7 @@ public class LoginController {
 	
 	@Operation(summary = "검증코드 유효성 검사 API", description = "Code 객체에는 codeNumber 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/verifyCode")
-	public ResponseEntity<?> verifyCode(@RequestBody Code code) {
+	public ResponseEntity<?> verifyCode(@RequestBody VerificationCode code) {
 		loginService.verifyCode(code);
 		return ResponseEntity.ok(null);
 	}
