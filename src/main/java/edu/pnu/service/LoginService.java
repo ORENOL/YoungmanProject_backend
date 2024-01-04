@@ -34,6 +34,8 @@ public class LoginService {
 		this.codeRepo = codeRepo;
 	}
 	
+	Random random = new Random();
+	
 	public String doubleCheck(Member member) {
 		Optional<Member> existMember = memberRepo.findById(member.getUsername());
 		if (existMember.isPresent()) {
@@ -129,8 +131,6 @@ public class LoginService {
 		}
 		
 		Member tempMember = existMember.get();
-		
-		Random random = new Random();
 		
 		// 인증코드 난수 생성 (digit = 자릿수)
 		int digit = 6;
