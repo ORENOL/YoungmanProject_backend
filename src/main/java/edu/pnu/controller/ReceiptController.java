@@ -48,8 +48,8 @@ public class ReceiptController {
 	public ResponseEntity<?> getPageReceipt(
 			@RequestParam(defaultValue = "0") int pageNo, @RequestParam(defaultValue = "10") int pageSize, 
 			@RequestParam(defaultValue = "tradeDate") String orderCriteria, @RequestParam(defaultValue = "companyName") String searchCriteria,
-			@RequestParam(required = false) String searchWord) throws ParseException {
-		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria, searchCriteria, searchWord);
+			@RequestParam(required = false) String searchValue) throws ParseException {
+		Page<Receipt> page = receiptService.getPageReceipt(pageNo, pageSize, orderCriteria, searchCriteria, searchValue);
 		return ResponseEntity.ok(page);
 	}
 	

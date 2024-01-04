@@ -5,10 +5,13 @@ import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import edu.pnu.domain.Member;
+import java.util.List;
+
 
 
 public interface MemberRepository extends MongoRepository<Member, String> {
 	Optional<Member> findByEmail(String email);
 	boolean existsByEmail(String email);
+	List<Member> findByAssociation(String association);
 
 }

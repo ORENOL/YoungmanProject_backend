@@ -3,6 +3,7 @@ package edu.pnu;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
@@ -10,9 +11,11 @@ import java.util.concurrent.ThreadLocalRandom;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import edu.pnu.domain.Member;
 import edu.pnu.domain.Receipt;
+import edu.pnu.persistence.AssociationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
 import edu.pnu.persistence.ReceiptRepository;
 
@@ -24,6 +27,12 @@ public class MongodbTest {
 	
 	@Autowired
 	private MemberRepository memberRepo;
+	
+	@Autowired
+	private PasswordEncoder encoder;
+	
+	@Autowired
+	private AssociationCodeRepository assoRepo;
 	
     public static String generateRandomHangul(int length) {
         StringBuilder sb = new StringBuilder();
@@ -83,5 +92,17 @@ public class MongodbTest {
 	@Test
 	public void deleteMongo() {
 		receiptRepo.deleteByCompanyNameContaining("테스트기업");
+	}
+
+	@Test
+	public void changeValue() {
+
+		String id = "0";
+		List<Member> list = memberRepo.findAll();
+		for (Member member : list) {
+			Member temp = Member.builder().username(member.getUsername()).password(member.getPassword())
+					.email(member.getEmail()).role(member.getRole()).association(assoRepo.findById(id).get()).build();
+			memberRepo.save(temp);
+		}
 	}
 }

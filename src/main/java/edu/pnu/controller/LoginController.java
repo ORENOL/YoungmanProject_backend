@@ -40,7 +40,7 @@ public class LoginController {
 	public ResponseEntity<?> provideJWT() {
 
 		String token = JWT.create()
-				.withClaim("username", "test2")
+				.withClaim("username", "OREN")
 				.sign(Algorithm.HMAC256("edu.pnu.jwt"));
 		
 		return ResponseEntity.ok("Bearer " + token);

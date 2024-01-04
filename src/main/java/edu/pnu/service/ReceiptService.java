@@ -10,8 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,13 +57,13 @@ public class ReceiptService {
 		this.webclient = webclient;
 	}
 
-	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchWord) throws ParseException {
+	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchValue) throws ParseException {
 		
 		Sort sort = Sort.by(Sort.Order.desc(orderCriteria));
 		PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
-		System.out.println(searchWord);
+		System.out.println(searchValue);
 		
-		if (searchWord == null) {
+		if (searchValue == null) {
 			Page<Receipt> page = receiptRepo.findAll(pageable);
 			return page;
 		}
@@ -76,14 +74,14 @@ public class ReceiptService {
 		
 		// 회사이름 또는 품명 검색
 		if (searchCriteria.equals("companyName") || searchCriteria.equals("item")) {
-		    query.addCriteria(Criteria.where(searchCriteria).regex(searchWord, "i"));
+		    query.addCriteria(Criteria.where(searchCriteria).regex(searchValue, "i"));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
 		    return new PageImpl<>(list, pageable, total); 
 		}
 		
 		// 수량 또는 단가 또는 금액 검색
 		if (searchCriteria.equals("quantity") || searchCriteria.equals("unitPrice") || searchCriteria.equals("price")) {
-			int number = Integer.parseInt(searchWord);
+			int number = Integer.parseInt(searchValue);
 			query.addCriteria(Criteria.where(searchCriteria).gte(number));
 	        List<Receipt> list = mongoTemplate.find(query, Receipt.class);
 		    return new PageImpl<>(list, pageable, total);
@@ -93,7 +91,7 @@ public class ReceiptService {
 		// 날짜 검색
 		if (searchCriteria.equals("tradeDate") || searchCriteria.equals("createDate")) {
 			
-			String[] parts = searchWord.split("~");
+			String[] parts = searchValue.split("~");
 		    Date startDate = format.parse(parts[0]);
 		    Date endDate = format.parse(parts[1]);
 
@@ -106,7 +104,7 @@ public class ReceiptService {
 		
 		// 회사이름 & 품명 검색
 		if (searchCriteria.equals("companyName&item")) {
-			String[] keyword = searchWord.split("&");
+			String[] keyword = searchValue.split("&");
 			criteria.andOperator(Criteria.where("companyName").regex(keyword[0], "i"), 
 									Criteria.where("item").regex(keyword[1], "i"));
 			query.addCriteria(criteria);
@@ -116,7 +114,7 @@ public class ReceiptService {
 		
 		// 날짜 & 회사이름 검색
 		if (searchCriteria.equals("tradeDate&companyName")) {
-			String[] keyword = searchWord.split("&");
+			String[] keyword = searchValue.split("&");
 			
 			String[] dateParts = keyword[0].split("~");
 		    Date startDate = format.parse(dateParts[0]);
@@ -130,7 +128,7 @@ public class ReceiptService {
 		}
 		// 날짜 & 품명 검색
 		if (searchCriteria.equals("tradeDate&item")) {
-			String[] keyword = searchWord.split("&");
+			String[] keyword = searchValue.split("&");
 			
 			String[] dateParts = keyword[0].split("~");
 		    Date startDate = format.parse(dateParts[0]);
@@ -144,7 +142,7 @@ public class ReceiptService {
 		}
 		// 날짜 & 회사이름 & 품명 검색
 		if (searchCriteria.equals("tradeDate&companyName&item")) {
-			String[] keyword = searchWord.split("&");
+			String[] keyword = searchValue.split("&");
 			
 			String[] dateParts = keyword[0].split("~");
 		    Date startDate = format.parse(dateParts[0]);

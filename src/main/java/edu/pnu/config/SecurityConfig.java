@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import edu.pnu.config.filter.JWTAuthenticationFilter;
 import edu.pnu.config.filter.JWTAuthorizationFilter;
-import edu.pnu.domain.enums.Role;
 import edu.pnu.persistence.MemberRepository;
 
 @Configuration
@@ -84,5 +83,7 @@ public class SecurityConfig {
     WebClient webClient(WebClient.Builder builder) {
 		return builder.build();
 	}
+    
+
 	
 }
