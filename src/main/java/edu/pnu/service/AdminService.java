@@ -62,7 +62,7 @@ public class AdminService {
 
 	public void updateOurMember(Member member, Authentication auth) {
 		
-		AssociationCode adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
+		String adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
 		
 		if(!member.getAssociation().equals(adminAssociation)) {
 			throw new NotAcceptableStatusException("not your member");
@@ -84,7 +84,7 @@ public class AdminService {
 
 	public void deleteOurMember(Member member, Authentication auth) {
 		
-		AssociationCode adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
+		String adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
 		
 		if(!member.getAssociation().equals(adminAssociation)) {
 			throw new NotAcceptableStatusException("not your member");

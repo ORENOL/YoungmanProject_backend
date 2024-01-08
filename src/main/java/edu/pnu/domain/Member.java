@@ -29,5 +29,5 @@ public class Member {
 	@Pattern(regexp = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
 	private String email;
 	
-	private AssociationCode association;
+	private String association;
 }

@@ -35,10 +35,4 @@ public class SwaggerConfig {
                 .components(new Components().addSecuritySchemes("bearerAuth", securityScheme))
                 .security(Arrays.asList(securityRequirement));
     }
-    
-    @Bean
-    public MongoCustomConversions customConversions() {
-        return new MongoCustomConversions(Arrays.asList(new StringToAssociationCodeConverter()));
-    }
-    
 }

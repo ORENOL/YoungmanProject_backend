@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import edu.pnu.domain.AssociationCode;
 import edu.pnu.domain.Member;
 import java.util.List;
 
