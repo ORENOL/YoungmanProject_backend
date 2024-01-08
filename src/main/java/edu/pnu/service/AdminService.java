@@ -12,6 +12,7 @@ import org.springframework.web.server.NotAcceptableStatusException;
 
 import edu.pnu.domain.AssociationCode;
 import edu.pnu.domain.Member;
+import edu.pnu.domain.dto.SignMember;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.AssociationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
@@ -70,19 +71,19 @@ public class AdminService {
 		return list;
 	}
 
-	public void updateOurMember(Member member, Authentication auth) {
+	public void updateOurMember(SignMember member, Authentication auth) {
 		
 		Optional<Member> existingMember = memberRepo.findById(auth.getName());
 		
 		if (!existingMember.isPresent()) {
 			throw new ResourceNotFoundException("not exist member");
 		}
-		
 		Member existMember = existingMember.get();
 		
-		AssociationCode adminAssociation = member.getAssociation();
+		AssociationCode adminAssociation = existMember.getAssociation();
+		AssociationCode memberAssociation = associationCodeRepo.findById(member.getAssociation()).get();
 		
-		if(!member.getAssociation().equals(adminAssociation)) {
+		if(!memberAssociation.getAssociation().equals(adminAssociation.getAssociation())) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		

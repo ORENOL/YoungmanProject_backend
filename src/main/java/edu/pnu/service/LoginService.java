@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.VerificationCode;
+import edu.pnu.domain.dto.SignMember;
 import edu.pnu.domain.Member;
 import edu.pnu.domain.enums.Role;
 import edu.pnu.exception.DuplicatedIdException;
@@ -48,7 +49,7 @@ public class LoginService {
 		
 	}
 
-	public void signup(Member member) {	
+	public void signup(SignMember member) {	
 		
 		
 		if (memberRepo.existsById(member.getUsername()) || memberRepo.existsByEmail(member.getEmail())) {
@@ -64,7 +65,7 @@ public class LoginService {
 				.password(encoder.encode(member.getPassword()))
 				.email(member.getEmail())
 				.role(Role.WAITING)
-				.association(assoRepo.findById("0").get())
+				.association(assoRepo.findById(member.getAssociation()).get())
 				.build());
 		return;
 		

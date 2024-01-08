@@ -12,6 +12,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import edu.pnu.domain.VerificationCode;
 import edu.pnu.domain.Member;
 import edu.pnu.domain.dto.ApiResponse;
+import edu.pnu.domain.dto.SignMember;
 import edu.pnu.service.LoginService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -48,7 +49,7 @@ public class LoginController {
 
 	@Operation(summary = "사용자 회원가입 기능", description = "Member 객체에는 username, password, email 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/signup")
-	public ResponseEntity<?> signup(@RequestBody @Valid Member member){
+	public ResponseEntity<?> signup(@RequestBody @Valid SignMember member){
 		loginService.signup(member);
 	    ApiResponse response = new ApiResponse("signUp success");
 		return ResponseEntity.ok(response);

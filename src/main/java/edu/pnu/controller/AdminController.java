@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import edu.pnu.domain.AssociationCode;
 import edu.pnu.domain.Member;
+import edu.pnu.domain.dto.SignMember;
 import edu.pnu.persistence.AssociationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
 import edu.pnu.service.AdminService;
@@ -59,7 +60,7 @@ public class AdminController {
 	
 	@Operation(summary = "지정한 멤버의 정보를 수정합니다")
 	@PutMapping("updateOurMember")
-	private ResponseEntity<?> updateOurMember(@RequestBody Member member, Authentication auth) {
+	private ResponseEntity<?> updateOurMember(@RequestBody SignMember member, Authentication auth) {
 		adminService.updateOurMember(member, auth);
 		return ResponseEntity.ok().build();
 	}
