@@ -101,7 +101,7 @@ public class MongodbTest {
 		List<Member> list = memberRepo.findAll();
 		for (Member member : list) {
 			Member temp = Member.builder().username(member.getUsername()).password(member.getPassword())
-					.email(member.getEmail()).role(member.getRole()).association(member.getAssociation()).build();
+					.email(member.getEmail()).role(member.getRole()).association(assoRepo.findById(id).get()).build();
 			memberRepo.save(temp);
 		}
 	}

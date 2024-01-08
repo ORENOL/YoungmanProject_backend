@@ -3,6 +3,7 @@ package edu.pnu.domain;
 import java.util.Date;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Builder
 @ToString
+@Document
 public class OriginReceipt {
 	
 	@Id

@@ -16,6 +16,7 @@ import edu.pnu.exception.DuplicatedIdException;
 import edu.pnu.exception.ExpiredCodeException;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.VerificationCodeRepository;
+import edu.pnu.persistence.AssociationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
 
 @Service
@@ -26,12 +27,14 @@ public class LoginService {
 	private PasswordEncoder encoder;
 	private JavaMailSender mailSender;
 	private VerificationCodeRepository codeRepo;
+	private AssociationCodeRepository assoRepo;
 	
-	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, JavaMailSender mailSender, VerificationCodeRepository codeRepo) {
+	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, JavaMailSender mailSender, VerificationCodeRepository codeRepo, AssociationCodeRepository assoRepo) {
 		this.memberRepo = memberRepo;
 		this.encoder = encoder;
 		this.mailSender = mailSender;
 		this.codeRepo = codeRepo;
+		this.assoRepo = assoRepo;
 	}
 	
 	Random random = new Random();
@@ -61,7 +64,7 @@ public class LoginService {
 				.password(encoder.encode(member.getPassword()))
 				.email(member.getEmail())
 				.role(Role.WAITING)
-				.association(member.getAssociation())
+				.association(assoRepo.findById("0").get())
 				.build());
 		return;
 		

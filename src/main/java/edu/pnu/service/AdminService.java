@@ -1,6 +1,7 @@
 package edu.pnu.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -11,6 +12,7 @@ import org.springframework.web.server.NotAcceptableStatusException;
 
 import edu.pnu.domain.AssociationCode;
 import edu.pnu.domain.Member;
+import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.AssociationCodeRepository;
 import edu.pnu.persistence.MemberRepository;
 
@@ -55,6 +57,14 @@ public class AdminService {
 			query.addCriteria(Criteria.where("role").regex(searchValue, "i"));
 		}
 		
+		Criteria criteria = new Criteria();
+		
+		if (searchCriteria.equals("username&role")) {
+			String[] keyword = searchValue.split("&");
+			criteria.andOperator(Criteria.where("username").regex(keyword[0]), Criteria.where("role").regex(keyword[1]));
+			query.addCriteria(criteria);
+		}
+		
 		list = mongoTemplate.find(query, Member.class);
 
 		return list;
@@ -62,13 +72,20 @@ public class AdminService {
 
 	public void updateOurMember(Member member, Authentication auth) {
 		
-		String adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
+		Optional<Member> existingMember = memberRepo.findById(auth.getName());
+		
+		if (!existingMember.isPresent()) {
+			throw new ResourceNotFoundException("not exist member");
+		}
+		
+		Member existMember = existingMember.get();
+		
+		AssociationCode adminAssociation = member.getAssociation();
 		
 		if(!member.getAssociation().equals(adminAssociation)) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		
-		Member existMember = memberRepo.findById(member.getUsername()).get();
 		
 		Member temp = Member.builder()
 					.username(existMember.getUsername())
@@ -84,13 +101,21 @@ public class AdminService {
 
 	public void deleteOurMember(Member member, Authentication auth) {
 		
-		String adminAssociation = memberRepo.findById(auth.getName()).get().getAssociation();
+		Optional<Member> existingMember = memberRepo.findById(auth.getName());
 		
-		if(!member.getAssociation().equals(adminAssociation)) {
+		if (!existingMember.isPresent()) {
+			throw new ResourceNotFoundException("not exist member");
+		}
+		
+		Member existMember = existingMember.get();
+		
+		AssociationCode adminAssociation = member.getAssociation();
+		
+		if(!existMember.getAssociation().equals(adminAssociation)) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		
-		memberRepo.delete(member);
+		memberRepo.delete(existMember);
 		return;
 	}
 }
