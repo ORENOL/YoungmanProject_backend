@@ -73,27 +73,27 @@ public class AdminService {
 
 	public void updateOurMember(SignMember member, Authentication auth) {
 		
-		Optional<Member> existingMember = memberRepo.findById(auth.getName());
-		
-		if (!existingMember.isPresent()) {
+		Optional<Member> optionalExistMember = memberRepo.findById(auth.getName());
+		Optional<Member> optionalChangeMember = memberRepo.findById(member.getUsername());
+		if (!(optionalExistMember.isPresent() & optionalChangeMember.isPresent())) {
 			throw new ResourceNotFoundException("not exist member");
 		}
-		Member existMember = existingMember.get();
+		Member existMember = optionalExistMember.get();
+		Member changeMember = optionalChangeMember.get();
 		
 		AssociationCode adminAssociation = existMember.getAssociation();
-		AssociationCode memberAssociation = associationCodeRepo.findById(member.getAssociation()).get();
+		AssociationCode memberAssociation = changeMember.getAssociation();
 		
 		if(!memberAssociation.getAssociation().equals(adminAssociation.getAssociation())) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		
-		
 		Member temp = Member.builder()
-					.username(existMember.getUsername())
-					.password(existMember.getPassword())
-					.email(existMember.getEmail())
+					.username(changeMember.getUsername())
+					.password(changeMember.getPassword())
+					.email(changeMember.getEmail())
 					.role(member.getRole())
-					.association(existMember.getAssociation())
+					.association(changeMember.getAssociation())
 					.build();
 		 
 		memberRepo.save(temp);

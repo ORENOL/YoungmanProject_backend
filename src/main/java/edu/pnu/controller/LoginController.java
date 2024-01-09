@@ -85,12 +85,13 @@ public class LoginController {
 		return ResponseEntity.ok(null);
 	}
 	
-	@Operation(summary = "검증코드 발송 API")
-	@PostMapping("/api/public/sendCodeToMail")
-	public ResponseEntity<?> sendCodeToMail(@RequestBody Member member) {
-		loginService.sendCodeToMail(member);
-		return ResponseEntity.ok(null);
-	}
+	/*
+	 * @Operation(summary = "검증코드 발송 API")
+	 * 
+	 * @PostMapping("/api/public/sendCodeToMail") public ResponseEntity<?>
+	 * sendCodeToMail(@RequestBody Member member) {
+	 * loginService.sendCodeToMail(member); return ResponseEntity.ok(null); }
+	 */
 	
 	@Operation(summary = "검증코드 유효성 검사 API", description = "Code 객체에는 codeNumber 프로퍼티만 입력하면 됩니다.")
 	@PostMapping("/api/public/verifyCode")

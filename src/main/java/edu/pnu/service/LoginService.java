@@ -26,14 +26,14 @@ public class LoginService {
 
 	private MemberRepository memberRepo;
 	private PasswordEncoder encoder;
-	private JavaMailSender mailSender;
+//	private JavaMailSender mailSender;
 	private VerificationCodeRepository codeRepo;
 	private AssociationCodeRepository assoRepo;
 	
-	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, JavaMailSender mailSender, VerificationCodeRepository codeRepo, AssociationCodeRepository assoRepo) {
+	public LoginService(MemberRepository memberRepo, PasswordEncoder encoder, VerificationCodeRepository codeRepo, AssociationCodeRepository assoRepo) {
 		this.memberRepo = memberRepo;
 		this.encoder = encoder;
-		this.mailSender = mailSender;
+//		this.mailSender = mailSender;
 		this.codeRepo = codeRepo;
 		this.assoRepo = assoRepo;
 	}
@@ -154,7 +154,7 @@ public class LoginService {
 		mail.setTo(tempMember.getEmail());
 		mail.setSubject("Youngman프로젝트 비밀번호 인증코드입니다.");
 		mail.setText("인증코드: " + code);
-		mailSender.send(mail);
+//		mailSender.send(mail);
 	}
 
 }
