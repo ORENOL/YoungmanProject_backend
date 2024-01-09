@@ -1,28 +1,21 @@
 	package edu.pnu.controller;
 
-import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
-import edu.pnu.domain.ChatRoom;
 import edu.pnu.service.ChatService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -53,29 +46,25 @@ public class ChatController {
     	chatService.inviteUser(chatMessage);
     }
     
-    
+    // 1:1 채널에 메세지를 보냅니다.
     @MessageMapping("/chat.sendMessageToRoom")
     public void sendMessageToRoom(@Payload ChatMessage chatMessage) {
     	chatService.sendMessageToRoom(chatMessage);
     }
     
+    // 1:1 채널의 채팅 로그를 가져옵니다.
     @GetMapping("/getChatLogsByRoomId")
-    public ResponseEntity<?> getChatLogsByRoomId(@RequestParam String chatRoomId) {
-    	List<ChatLog> logList = chatService.getChatLogsByRoomId(chatRoomId);
+    public ResponseEntity<?> getChatLogsByRoomId(@RequestParam String chatRoomId, Authentication auth) {
+    	List<ChatLog> logList = chatService.getChatLogsByRoomId(chatRoomId, auth);
     	return ResponseEntity.ok(logList);
     }
     
+    // 사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.
     @GetMapping("/getLastChatLog")
     public ResponseEntity<?> getLasChatLog(Authentication auth) {
-    	// 1.
-    	// 사용자의 회사의 모든 직원 불러오기
-    	// Receiver가 사용자이고 Sender가 직원인 채팅로그 중 각각 마지막 하나씩만 가져오기
     	
-    	// 2.
-    	// 사용자와 관련된 모든 채팅방Id 불러오기
-    	// 채팅방Id를 조회하고 각각 Receiver가 사용자인 마지막 로그를 가져오기.
-//    	List<ChatLog> logList = chatService.getLasChatLog(auth);
-    	List<ChatLog> logList = chatService.findLastMessagesForReceiver(auth);
+    	// Receiver가 사용자인 마지막 로그를 가져오기.
+    	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth);
     	return ResponseEntity.ok(logList);
     }
     

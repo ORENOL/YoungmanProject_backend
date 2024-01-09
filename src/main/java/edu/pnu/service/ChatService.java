@@ -2,6 +2,7 @@ package edu.pnu.service;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -75,36 +76,55 @@ public class ChatService {
         return date;
     }
 
-	public List<ChatLog> getChatLogsByRoomId(String chatRoomId) {
+	public List<ChatLog> getChatLogsByRoomId(String chatRoomId, Authentication auth) {
 		List<ChatLog> logList = chatLogRepo.findByChatRoomId(chatRoomId);
-//		if (!OptionalLogList.isPresent()) {
-//			throw new ResourceNotFoundException("not exist chatlog");
-//		}
 		
-//		List<ChatLog> LogList = OptionalLogList.get();
+		List<ChatLog> list = new ArrayList<>();
 		
-		return logList;
+		for (ChatLog log : logList) {
+			
+			if (!log.getSender().equals(auth.getName())) {
+				log.setIsLooked(IsLooked.TRUE);
+			}
+			list.add(log);
+		}
+		return list;
 	}
 
-	public List<ChatLog> getLasChatLog(Authentication auth) {
-		List<ChatLog> logList = chatLogRepo.findByReceiver(auth.getName());
-		return logList;
-	}
-	
 	public List<ChatLog> findLastMessagesForReceiver(Authentication auth) {
 	    Aggregation aggregation = Aggregation.newAggregation(
-	        Aggregation.match(Criteria.where("Receiver").is(auth.getName())), // 특정 수신자 필터링
-	        Aggregation.sort(Sort.Direction.DESC, "timestamp"), // 시간 내림차순 정렬
-	        Aggregation.group("Sender") // 발신자별 그룹화
-	            .first("$$ROOT").as("lastMessage") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
-	    );
+	            Aggregation.match(Criteria.where("Receiver").is(auth.getName())), // 특정 수신자 필터링
+	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
+	            Aggregation.group("Sender").first("content").as("content").first("timeStamp").as("timeStamp").first("chatRoomId").as("chatRoomId").first("Sender").as("Sender") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
+	        );
 
-	    AggregationResults<ChatLog> results = mongoTemplate.aggregate(
-	        aggregation, ChatLog.class, ChatLog.class
-	    );
+	        AggregationResults<ChatLog> results = mongoTemplate.aggregate(
+	            aggregation, "chatLog", ChatLog.class
+	        );
+	       
+	        return results.getMappedResults();
+	    }
+	
+	public List<ChatLog> findLastMessagesForRoomId(Authentication auth) {
+	    Aggregation aggregation = Aggregation.newAggregation(
+	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 특정 수신자 필터링
+	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
+	            Aggregation.group("chatRoomId").first("content").as("content").first("timeStamp").as("timeStamp").first("chatRoomId").as("chatRoomId").first("Sender").as("Sender").first("isLooked").as("isLooked") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
+	        );
+	    
+        AggregationResults<ChatLog> results = mongoTemplate.aggregate(
+            aggregation, "chatLog", ChatLog.class
+        );
+        
+        Aggregation aggregation2 = Aggregation.newAggregation(
+	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 특정 수신자 필터링
+	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
+	            Aggregation.group("chatRoomId").count() // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
+	        );
 
-	    return results.getMappedResults();
+       
+        return results.getMappedResults();
+
 	}
-
 
 }

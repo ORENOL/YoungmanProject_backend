@@ -19,6 +19,9 @@ public class ChatMessage {
 	private String receiver;
 	private String roomId;
 	private ZonedDateTime timeStamp;
+	
 }
+
+
 
 
