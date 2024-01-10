@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,14 +80,14 @@ public class ChatController {
     
     @Operation(description = "접속중인 사용자가 상대방의 메세지를 읽으면 메세지 상태를 읽음으로 업데이트합니다.")
     @PutMapping("/updateIsLooked")
-	public ResponseEntity<?> updateIsLooked(ChatLog chatLog, Authentication auth) {
+	public ResponseEntity<?> updateIsLooked(@RequestBody ChatLog chatLog, Authentication auth) {
     	chatService.updateIsLooked(chatLog, auth);
     	return ResponseEntity.ok(null);
     }
     
     @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
-    @PostMapping("postGreeting")
-    public ResponseEntity<?> postGreeting(ChatMessage chatMessage, Authentication auth) {
+    @PostMapping("/postGreeting")
+    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth) {
     	chatService.postGreeting(chatMessage, auth);
     	return ResponseEntity.ok(null);
     }
