@@ -1,7 +1,9 @@
 package edu.pnu;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -13,11 +15,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.Member;
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.enums.IsLooked;
 import edu.pnu.persistence.AssociationCodeRepository;
+import edu.pnu.persistence.ChatLogRepository;
 import edu.pnu.persistence.MemberRepository;
 import edu.pnu.persistence.ReceiptRepository;
+import edu.pnu.service.ChatService;
 
 @SpringBootTest
 public class MongodbTest {
@@ -33,6 +39,9 @@ public class MongodbTest {
 	
 	@Autowired
 	private AssociationCodeRepository assoRepo;
+	
+	@Autowired
+	private ChatLogRepository chatLogRepo;
 	
     public static String generateRandomHangul(int length) {
         StringBuilder sb = new StringBuilder();
@@ -104,5 +113,34 @@ public class MongodbTest {
 					.email(member.getEmail()).role(member.getRole()).association(assoRepo.findById(id).get()).build();
 			memberRepo.save(temp);
 		}
+	}
+	
+	@Test
+	public void addChatLog() {
+
+		List<ChatLog> list = new ArrayList<>();
+		
+		for (int i=0; i<3000; i++) {
+	    	ZonedDateTime sendTime = ZonedDateTime.now();
+			Date date = ChatService.convertZonedDateTimeToDate(sendTime);
+
+		ChatLog log = ChatLog.builder()
+				.chatRoomId("OREN&ORENOL")
+				.content("아무 메세지"+i)
+				.isLooked(IsLooked.FALSE)
+				.Sender("OREN")
+				.Receiver("ORENOL")
+				.timeStamp(date)
+				.build();
+		
+		list.add(log);
+		}
+		
+		chatLogRepo.saveAll(list);
+	}
+	
+	@Test
+	public void deleteChatLog() {
+		chatLogRepo.deleteByChatRoomId("OREN&ORENOL");
 	}
 }

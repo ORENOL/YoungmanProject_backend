@@ -110,9 +110,9 @@ public class AdminService {
 		
 		Member existMember = existingMember.get();
 		
-		AssociationCode adminAssociation = member.getAssociation();
+		AssociationCode memberAssociation = member.getAssociation();
 		
-		if(!existMember.getAssociation().equals(adminAssociation)) {
+		if(!existMember.getAssociation().equals(memberAssociation)) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		
