@@ -89,6 +89,9 @@ public class ChatService {
 			}
 			list.add(log);
 		}
+		
+		chatLogRepo.saveAll(list);
+		
 		return list;
 	}
 
@@ -107,8 +110,11 @@ public class ChatService {
 	    }
 	
 	public List<ChatLog> findLastMessagesForRoomId(Authentication auth) {
+		Criteria criteria = new Criteria();
+		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), Criteria.where("Receiver").is(auth.getName()));
+		
 	    Aggregation aggregation = Aggregation.newAggregation(
-	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 사용자가 포함된 채팅방 필터링
+	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 필터링
 	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
 	            Aggregation.group("chatRoomId").first("content").as("content").first("timeStamp").as("timeStamp").first("chatRoomId").as("chatRoomId").first("Sender").as("Sender").first("isLooked").as("isLooked") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
 	        );
@@ -123,11 +129,12 @@ public class ChatService {
 	
 	public List<Map> findUnReadMessageForRoomId(Authentication auth) {
         Criteria criteria = new Criteria();
-        criteria.andOperator(Criteria.where("chatRoomId").regex(auth.getName()), Criteria.where("isLooked").is("FALSE"));
-        
+		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), Criteria.where("Receiver").is(auth.getName()));
+		criteria.andOperator(Criteria.where("isLooked").is("FALSE"));
+
         Aggregation aggregation = Aggregation.newAggregation(
-	            Aggregation.match(criteria), // 사용자가 포함된 채팅방 필터링
-	            Aggregation.group("chatRoomId").count().as("unreadMessages") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
+	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 중 읽지 않은 메세지 필터링
+	            Aggregation.group("chatRoomId").count().as("unreadMessages") // 각 그룹의 로그 갯수
 	        );
         
         AggregationResults<Map> unreadCount = mongoTemplate.aggregate(
