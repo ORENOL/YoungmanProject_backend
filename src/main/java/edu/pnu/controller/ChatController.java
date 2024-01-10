@@ -1,8 +1,7 @@
 	package edu.pnu.controller;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -29,8 +28,6 @@ public class ChatController {
 	public ChatController(ChatService chatService) {
 		this.chatService = chatService;
 	}
-	
-    private static Set<String> userList = new HashSet<>();
 
     // 전역 채널로 메세지를 보냅니다.
     @MessageMapping("/chat.sendMessage")
@@ -62,35 +59,15 @@ public class ChatController {
     // 사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.
     @GetMapping("/getLastChatLog")
     public ResponseEntity<?> getLasChatLog(Authentication auth) {
-    	
-    	// Receiver가 사용자인 마지막 로그를 가져오기.
     	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth);
     	return ResponseEntity.ok(logList);
     }
     
-	/*
-	 * @MessageMapping("/chat.addUser")
-	 * 
-	 * @SendTo("/topic/private") public ChatMessage addUser(@Payload ChatMessage
-	 * chatMessage, SimpMessageHeaderAccessor headerAccessor) { // 사용자 이름을 WebSocket
-	 * 세션에 추가 headerAccessor.getSessionAttributes().put("username",
-	 * chatMessage.getSender()); return chatMessage; }
-	 * 
-	 * @MessageMapping("/chat/{id}") public void inviteUser(@Payload ChatMessage
-	 * chatMessage, @DestinationVariable String id) {
-	 * System.out.println("chatMessage: "+chatMessage.toString());
-	 * System.out.println("id: "+id);
-	 * messagingTemplate.convertAndSend("/queue/addChatToClient/"+id, chatMessage);
-	 * }
-	 * 
-	 * @MessageMapping("/join") public void joinUser(@Payload String userId){
-	 * userList.add(userId); userList.forEach(user-> System.out.println(user)); }
-	 */
-
-    
-
-    
-    
-
-    		
+    // 사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.
+    @GetMapping("/getCountUnReadMessage")
+    public ResponseEntity<?> findUnReadMessageForRoomIdd(Authentication auth) {
+    	List<Map> logList = chatService.findUnReadMessageForRoomId(auth);
+    	return ResponseEntity.ok(logList);
+    }
+		
 }

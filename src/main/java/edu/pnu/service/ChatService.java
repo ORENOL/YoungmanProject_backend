@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -107,7 +108,7 @@ public class ChatService {
 	
 	public List<ChatLog> findLastMessagesForRoomId(Authentication auth) {
 	    Aggregation aggregation = Aggregation.newAggregation(
-	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 특정 수신자 필터링
+	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 사용자가 포함된 채팅방 필터링
 	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
 	            Aggregation.group("chatRoomId").first("content").as("content").first("timeStamp").as("timeStamp").first("chatRoomId").as("chatRoomId").first("Sender").as("Sender").first("isLooked").as("isLooked") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
 	        );
@@ -116,15 +117,24 @@ public class ChatService {
             aggregation, "chatLog", ChatLog.class
         );
         
-        Aggregation aggregation2 = Aggregation.newAggregation(
-	            Aggregation.match(Criteria.where("chatRoomId").regex(auth.getName())), // 특정 수신자 필터링
-	            Aggregation.sort(Sort.Direction.DESC, "timeStamp"), // 시간 내림차순 정렬
-	            Aggregation.group("chatRoomId").count() // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
-	        );
-
-       
         return results.getMappedResults();
 
+	}
+	
+	public List<Map> findUnReadMessageForRoomId(Authentication auth) {
+        Criteria criteria = new Criteria();
+        criteria.andOperator(Criteria.where("chatRoomId").regex(auth.getName()), Criteria.where("isLooked").is("FALSE"));
+        
+        Aggregation aggregation = Aggregation.newAggregation(
+	            Aggregation.match(criteria), // 사용자가 포함된 채팅방 필터링
+	            Aggregation.group("chatRoomId").count().as("unreadMessages") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
+	        );
+        
+        AggregationResults<Map> unreadCount = mongoTemplate.aggregate(
+                aggregation, "chatLog", Map.class
+            );
+
+        return unreadCount.getMappedResults();
 	}
 
 }

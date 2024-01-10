@@ -28,6 +28,7 @@ public class ChatLog {
 	private Date timeStamp;
 	private String chatRoomId;
 	private IsLooked isLooked;
+	private int unreadMessages;
 
 }
 
