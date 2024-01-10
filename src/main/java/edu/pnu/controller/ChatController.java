@@ -9,6 +9,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -80,6 +81,13 @@ public class ChatController {
     @PutMapping("/updateIsLooked")
 	public ResponseEntity<?> updateIsLooked(ChatLog chatLog, Authentication auth) {
     	chatService.updateIsLooked(chatLog, auth);
+    	return ResponseEntity.ok(null);
+    }
+    
+    @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
+    @PostMapping("postGreeting")
+    public ResponseEntity<?> postGreeting(ChatMessage chatMessage, Authentication auth) {
+    	chatService.postGreeting(chatMessage, auth);
     	return ResponseEntity.ok(null);
     }
 }

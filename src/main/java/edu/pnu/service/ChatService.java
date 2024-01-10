@@ -99,28 +99,6 @@ public class ChatService {
 		
 		chatLogRepo.saveAll(list);
 		
-    	ZonedDateTime sendTime = ZonedDateTime.now();
-		Date date = convertZonedDateTimeToDate(sendTime);
-
-		
-		ChatLog temp = ChatLog.builder()
-				.chatRoomId(chatRoomId)
-				.content(auth.getName() + "이(가) 입장했습니다.")
-				.isLooked(IsLooked.FALSE)
-				.Sender(auth.getName())
-				.Receiver(chatRoomId.replace(auth.getName(), "").replace("&", ""))
-				.timeStamp(date)
-				.build();
-		
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		messagingTemplate.convertAndSend("/topic/room/"+ chatRoomId, temp);
-		
-		
 		return list;
 	}
 
@@ -217,5 +195,21 @@ public class ChatService {
 		log.setIsLooked(IsLooked.TRUE);
 		chatLogRepo.save(log);
 		
+	}
+
+	public void postGreeting(ChatMessage chatMessage, Authentication auth) {
+    	ZonedDateTime sendTime = ZonedDateTime.now();
+		Date date = convertZonedDateTimeToDate(sendTime);
+		
+		ChatLog temp = ChatLog.builder()
+				.chatRoomId(chatMessage.getRoomId())
+				.content(auth.getName() + "이(가) 입장했습니다.")
+				.isLooked(IsLooked.FALSE)
+				.Sender(auth.getName())
+				.Receiver(chatMessage.getRoomId().replace(auth.getName(), "").replace("&", ""))
+				.timeStamp(date)
+				.build();
+		
+		messagingTemplate.convertAndSend("/topic/room/"+ chatMessage.getRoomId(), temp);
 	}
 }
