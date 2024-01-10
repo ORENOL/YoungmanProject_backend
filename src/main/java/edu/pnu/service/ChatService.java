@@ -198,6 +198,9 @@ public class ChatService {
 	}
 
 	public void postGreeting(ChatMessage chatMessage, Authentication auth) {
+		
+		System.out.println(chatMessage.toString());
+		
     	ZonedDateTime sendTime = ZonedDateTime.now();
 		Date date = convertZonedDateTimeToDate(sendTime);
 		
