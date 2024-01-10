@@ -12,7 +12,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      gmail_password: ${{secrets.gmail_password}}
+      mongo_uri: ${{secrets.mongo_uri}}
     steps:
     - uses: actions/checkout@v2
     - name: Set up JDK 17
