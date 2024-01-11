@@ -1,26 +1,35 @@
 package edu.pnu.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationResults;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.web.header.writers.frameoptions.StaticAllowFromStrategy;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
 import edu.pnu.domain.dto.ChatLogUnReadDTO;
 import edu.pnu.domain.enums.IsLooked;
+import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.ChatLogRepository;
 
@@ -30,12 +39,16 @@ public class ChatService {
 	private SimpMessagingTemplate messagingTemplate;
 	private ChatLogRepository chatLogRepo;
 	private MongoTemplate mongoTemplate;
+	private TaskScheduler taskScheduler;
 	
-	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate) {
+	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate, TaskScheduler taskScheduler) {
 		this.messagingTemplate = messagingTemplate;
 		this.chatLogRepo = chatLogRepo;
 		this.mongoTemplate = mongoTemplate;
+		this.taskScheduler = taskScheduler;
 	}
+	
+	private static Map<String, List<String>> existingRoomId = new HashMap<>();
 
 	public ChatMessage sendMessageToGlobal(ChatMessage chatMessage) {
     	ZonedDateTime sendTime = ZonedDateTime.now();
@@ -63,6 +76,7 @@ public class ChatService {
     	ChatLog log = saveChatLog(chatMessage);
     	System.out.println(chatMessage.toString());
     	messagingTemplate.convertAndSend("/topic/room/"+ chatMessage.getRoomId(), log);
+    	messagingTemplate.convertAndSend("/topic/lobby/"+ chatMessage.getReceiver(), log);
 	}
 	
 	public ChatLog saveChatLog(ChatMessage chatMessage) {
@@ -116,7 +130,7 @@ public class ChatService {
 	        return results.getMappedResults();
 	    }
 	
-	public List<ChatLogUnReadDTO> findLastMessagesForRoomId(Authentication auth) {
+	public List<ChatLog> findLastMessagesForRoomId(Authentication auth) {
 		Criteria criteria = new Criteria();
 		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), Criteria.where("Receiver").is(auth.getName()));
 		
@@ -126,37 +140,10 @@ public class ChatService {
 	            Aggregation.group("chatRoomId").first("content").as("content").first("timeStamp").as("timeStamp").first("chatRoomId").as("chatRoomId").first("Sender").as("Sender").first("isLooked").as("isLooked") // 각 그룹의 첫 번째 메시지 (가장 최근 메시지)
 	        );
 	    
-        AggregationResults<ChatLogUnReadDTO> results = mongoTemplate.aggregate(
-            aggregation, "chatLog", ChatLogUnReadDTO.class
+        AggregationResults<ChatLog> results = mongoTemplate.aggregate(
+            aggregation, "chatLog", ChatLog.class
         );
-        // 마지막 메세지 쿼리
         
-//		criteria.andOperator(Criteria.where("isLooked").is("FALSE"));
-//        Aggregation aggregation2 = Aggregation.newAggregation(
-//	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 중 읽지 않은 메세지 필터링
-//	            Aggregation.group("chatRoomId").count().as("unReadMessages") // 각 그룹의 로그 갯수
-//	        );
-//        
-//        AggregationResults<ChatLogUnReadDTO> unreadCount = mongoTemplate.aggregate(
-//                aggregation2, "chatLog", ChatLogUnReadDTO.class
-//            );
-//        // 읽지 않은 메세지 수 쿼리
-//        
-//        List<ChatLogUnReadDTO> list = new ArrayList<>();
-//        
-//       	long startTime = System.nanoTime();
-//        for (ChatLogUnReadDTO log : results.getMappedResults()) {
-//        	for (ChatLogUnReadDTO unreadLog : unreadCount.getMappedResults()) {
-//        		if (log.getChatRoomId().equals(unreadLog.getChatRoomId())) {
-//        			log.setUnReadMessage(unreadLog.getUnReadMessage());
-//        			list.add(log);
-//        		}
-//        	}
-//        }
-//        long endTime = System.nanoTime();
-//        
-//    	System.out.println("실행 시간: " + (endTime-startTime)/1_000_000 + "ms");
-
         return results.getMappedResults();
 
 	}
@@ -178,7 +165,7 @@ public class ChatService {
         return unreadCount.getMappedResults();
 	}
 
-	public void updateIsLooked(ChatLog chatLog, Authentication auth) {
+	public ChatLog updateIsLooked(ChatLog chatLog, Authentication auth) {
 		// 신호를 받으면 읽지않은 메세지를 조회하고 읽음처리로 할까?
 
 		// 메세지를 서버로 전송해서 해당 메세지만 읽음 처리로 할까? (받아야할 메세지의 정보는?)
@@ -193,26 +180,124 @@ public class ChatService {
 		ChatLog log = OptionalLog.get();
 		
 		log.setIsLooked(IsLooked.TRUE);
-		chatLogRepo.save(log);
+		return chatLogRepo.save(log);
 		
 	}
 
-	public void postGreeting(ChatMessage chatMessage, Authentication auth) {
+	public void postGreeting(ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
 		
-		System.out.println(chatMessage.toString());
+		String roomId = chatMessage.getRoomId();
+		
+    	ZonedDateTime sendTime = ZonedDateTime.now();
+		Date date = convertZonedDateTimeToDate(sendTime);
+		
+		ChatLog temp2 = ChatLog.builder()
+				.chatRoomId(roomId)
+				.content("유저가 존재하는 방입니다.")
+				.isLooked(IsLooked.FALSE)
+				.Sender(auth.getName())
+				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
+				.timeStamp(date)
+				.type(MessageType.JOIN)
+				.build();
+		
+		// 내가 들어간 방이 존재하면
+		if (existingRoomId.containsKey(roomId)) {
+			// 들어간 방에 알림을 보내고
+			messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp2);
+			// roomId딕셔너리에 자기 이름 추가하기
+			existingRoomId.get(roomId).add(auth.getName());
+			
+		// 내가 들어간 방이 존재하지 않으면
+		} else {
+			// roomId딕셔너리에 방을 추가하고 자기 이름 넣기
+			System.out.println("존재하지않으니 넣을게");
+			List<String> userList = new ArrayList<>();
+			userList.add(auth.getName());
+			existingRoomId.put(roomId, userList);
+		}
+		
+		System.out.println(existingRoomId.get(roomId).toString());
+		
+		
+		ChatLog temp = ChatLog.builder()
+				.chatRoomId(roomId)
+				.content(auth.getName() + "이(가) 입장했습니다.")
+				.isLooked(IsLooked.FALSE)
+				.Sender(auth.getName())
+				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
+				.timeStamp(date)
+				.type(MessageType.JOIN)
+				.build();
+//		messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp);
+	}
+
+	public void handleDisconnectEvent(SessionDisconnectEvent event) {
+		
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+        String roomId = headerAccessor.getSessionAttributes().get("roomId").toString();
+        String userId = headerAccessor.getSessionAttributes().get("userId").toString();
 		
     	ZonedDateTime sendTime = ZonedDateTime.now();
 		Date date = convertZonedDateTimeToDate(sendTime);
 		
 		ChatLog temp = ChatLog.builder()
-				.chatRoomId(chatMessage.getRoomId())
-				.content(auth.getName() + "이(가) 입장했습니다.")
+				.chatRoomId(roomId)
+				.content(userId + "이(가) 퇴장했습니다.")
 				.isLooked(IsLooked.FALSE)
-				.Sender(auth.getName())
-				.Receiver(chatMessage.getRoomId().replace(auth.getName(), "").replace("&", ""))
+				.Sender(userId)
+				.Receiver(roomId.replace(userId, "").replace("&", ""))
 				.timeStamp(date)
+				.type(MessageType.LEAVE)
 				.build();
 		
-		messagingTemplate.convertAndSend("/topic/room/"+ chatMessage.getRoomId(), temp);
+		messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp);
+		
+		existingRoomId.get(roomId).remove(userId);
+		
+		if(existingRoomId.get(roomId).isEmpty()) {
+			existingRoomId.remove(roomId);
+		}
+		
+		System.out.println(existingRoomId.get(roomId).toString());
+		
+	}
+
+	public void sendInfoToSession(SimpMessageHeaderAccessor accessor) {
+		
+        String roomId = accessor.getSessionAttributes().get("roomId").toString();
+        String userId = accessor.getSessionAttributes().get("userId").toString();
+        
+    	ZonedDateTime sendTime = ZonedDateTime.now();
+		Date date = convertZonedDateTimeToDate(sendTime);
+        
+		ChatLog temp2 = ChatLog.builder()
+				.chatRoomId(roomId)
+				.content("유저가 존재하는 방입니다.")
+				.isLooked(IsLooked.FALSE)
+				.Sender(userId)
+				.Receiver(roomId.replace(userId, "").replace("&", ""))
+				.timeStamp(date)
+				.type(MessageType.JOIN)
+				.build();
+		
+		// 내가 들어간 방이 존재하면
+		if (existingRoomId.containsKey(roomId)) {
+			// 들어간 방에 알림을 보내고
+			messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp2);
+			// roomId딕셔너리에 자기 이름 추가하기
+			existingRoomId.get(roomId).add(userId);
+			
+		// 내가 들어간 방이 존재하지 않으면
+		} else {
+			// roomId딕셔너리에 방을 추가하고 자기 이름 넣기
+			System.out.println("존재하지않으니 넣을게");
+			List<String> userList = new ArrayList<>();
+			userList.add(userId);
+			existingRoomId.put(roomId, userList);
+		}
+		
+		System.out.println(existingRoomId.get(roomId).toString());
+		
 	}
 }
