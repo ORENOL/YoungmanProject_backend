@@ -1,12 +1,17 @@
 	package edu.pnu.controller;
 
+import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
 import edu.pnu.domain.dto.ChatLogUnReadDTO;
+import edu.pnu.domain.enums.IsLooked;
 import edu.pnu.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,6 +61,22 @@ public class ChatController {
     	chatService.sendMessageToRoom(chatMessage);
     }	
     
+    @MessageMapping("/chat.setRoomId")
+    public void sendInfoToSession(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor accessor) {
+    	System.out.println("hi");
+    	accessor.getSessionAttributes().put("roomId", chatMessage.getRoomId());
+    	accessor.getSessionAttributes().put("userId", chatMessage.getSender());
+    	String test = accessor.getSessionAttributes().get("roomId").toString();
+    	chatService.sendInfoToSession(accessor);
+    	System.out.println(test);
+    }
+    
+    
+    @EventListener
+    public void handleDisconnectEvent(SessionDisconnectEvent event) {
+        chatService.handleDisconnectEvent(event);
+    }
+    
     @Operation(description = "1:1 채널의 채팅 로그를 가져옵니다.")
     @GetMapping("/getChatLogsByRoomId")
     public ResponseEntity<?> getChatLogsByRoomId(@RequestParam String chatRoomId, Authentication auth) {
@@ -67,7 +90,7 @@ public class ChatController {
     @Operation(description = "사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.")
     @GetMapping("/getLastChatLog")
     public ResponseEntity<?> getLasChatLog(Authentication auth) {
-    	List<ChatLogUnReadDTO> logList = chatService.findLastMessagesForRoomId(auth);
+    	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth);
     	return ResponseEntity.ok(logList);
     }
     
@@ -81,14 +104,15 @@ public class ChatController {
     @Operation(description = "접속중인 사용자가 상대방의 메세지를 읽으면 메세지 상태를 읽음으로 업데이트합니다.")
     @PutMapping("/updateIsLooked")
 	public ResponseEntity<?> updateIsLooked(@RequestBody ChatLog chatLog, Authentication auth) {
-    	chatService.updateIsLooked(chatLog, auth);
-    	return ResponseEntity.ok(null);
+    	ChatLog log = chatService.updateIsLooked(chatLog, auth);
+    	return ResponseEntity.ok(log);
     }
     
     @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
     @PostMapping("/postGreeting")
-    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth) {
-    	chatService.postGreeting(chatMessage, auth);
+    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
+    	chatService.postGreeting(chatMessage, auth, headerAccessor);
     	return ResponseEntity.ok(null);
     }
+    
 }
