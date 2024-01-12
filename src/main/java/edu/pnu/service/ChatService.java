@@ -235,8 +235,15 @@ public class ChatService {
 	public void handleDisconnectEvent(SessionDisconnectEvent event) {
 		
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
-        String roomId = headerAccessor.getSessionAttributes().get("roomId").toString();
+        Object roomIdObj = headerAccessor.getSessionAttributes().get("roomId");
+        // 전체 알림 메세지의 경우 연결 해제 로직이 필요없으므로 메서드 종료
+        if (roomIdObj == null) {
+        	return;
+        }
+        String roomId = roomIdObj.toString();
         String userId = headerAccessor.getSessionAttributes().get("userId").toString();
+        
+        
 		
     	ZonedDateTime sendTime = ZonedDateTime.now();
 		Date date = convertZonedDateTimeToDate(sendTime);
