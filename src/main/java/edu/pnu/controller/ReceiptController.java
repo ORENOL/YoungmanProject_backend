@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -62,15 +63,15 @@ public class ReceiptController {
 	
 	@Operation(summary = "영수증 정보를 생성하거나 업데이트합니다.")
 	@PostMapping("/private/receipt/saveReceipt")
-	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt) {
-		String receiptid = receiptService.saveReceipt(receipt);
+	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt, Authentication auth) {
+		String receiptid = receiptService.saveReceipt(receipt, auth);
 		return ResponseEntity.ok(receiptid);
 	}
 	
 	@Operation(summary = "영수증 정보를 리스트로 받아 한번에 저장합니다.")
 	@PostMapping("/private/receipt/saveListReceipt")
-	public ResponseEntity<?> saveListReceipt(@RequestBody List<Receipt> receipt) {
-		receiptService.saveListReceipt(receipt);
+	public ResponseEntity<?> saveListReceipt(@RequestBody List<Receipt> receipt, Authentication auth) {
+		receiptService.saveListReceipt(receipt, auth);
 		return ResponseEntity.ok().build();
 	}
 	

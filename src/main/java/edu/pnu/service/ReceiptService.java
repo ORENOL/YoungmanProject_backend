@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,14 +27,19 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import edu.pnu.domain.ChatLog;
+import edu.pnu.domain.ChatMessage;
 import edu.pnu.domain.OriginReceipt;
 import edu.pnu.domain.Receipt;
 import edu.pnu.domain.ReceiptDocument;
+import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.OriginReceiptRepository;
 import edu.pnu.persistence.ReceiptDocumentRepository;
@@ -48,13 +54,15 @@ public class ReceiptService {
 	private ReceiptDocumentRepository receiptDocumentRepo;
 	private OriginReceiptRepository originReceiptRepository;
 	private WebClient webclient;
+	private SimpMessagingTemplate messagingTemplate;
 	
-	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient) {
+	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient, SimpMessagingTemplate messagingTemplate) {
 		this.receiptRepo = receiptRepo;
 		this.receiptDocumentRepo = receiptDocumentRepo;
 		this.originReceiptRepository = originReceiptRepository;
 		this.mongoTemplate = mongoTemplate;
 		this.webclient = webclient;
+		this.messagingTemplate = messagingTemplate;
 	}
 
 	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchValue) throws ParseException {
@@ -161,12 +169,25 @@ public class ReceiptService {
 		
 	}
 
-	public String saveReceipt(Receipt receipt) {
+	public String saveReceipt(Receipt receipt, Authentication auth) {
 		Receipt receiptId = receiptRepo.save(receipt);
+		
+    	ZonedDateTime sendTime = ZonedDateTime.now();
+		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
+		
+	    ChatLog log = ChatLog.builder()
+	    					.content(auth.getName() + "님이 " + receipt.getCompanyName()+ "의 영수증을 업데이트했습니다.")
+	    					.Sender(auth.getName())
+	    					.timeStamp(date)
+	    					.type(MessageType.NOTICE)
+	    					.build();
+	    
+	    messagingTemplate.convertAndSend("/topic/public", log);
+	    
 		return receiptId.getReceiptId();
 	}
 	
-	public void saveListReceipt(List<Receipt> receipt) {
+	public void saveListReceipt(List<Receipt> receipt, Authentication auth) {
 		List<Receipt> receiptList = new ArrayList<>();
 	    for (Receipt data : receipt) {
 	    	Receipt temp = Receipt.builder()
@@ -182,6 +203,19 @@ public class ReceiptService {
 	    				.build();
 	    	receiptList.add(temp);
 	    }
+	    
+    	ZonedDateTime sendTime = ZonedDateTime.now();
+		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
+		
+	    ChatLog log = ChatLog.builder()
+	    					.content(auth.getName() + "님이 " + receiptList.get(0).getCompanyName()+ "의 영수증을 등록했습니다.")
+	    					.Sender(auth.getName())
+	    					.timeStamp(date)
+	    					.type(MessageType.NOTICE)
+	    					.build();
+	    
+	    messagingTemplate.convertAndSend("/topic/public", log);
+	    
 		receiptRepo.saveAll(receiptList);
 		return;
 	}
@@ -214,6 +248,7 @@ public class ReceiptService {
             }
 		};
       
+		// Flask로 이미지를 전송하고 OCR 요청하는 단계
 		Flux<OriginReceipt> imageText = webclient.post()
         .uri("http://10.125.121.211:5000/")
         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -230,6 +265,8 @@ public class ReceiptService {
 //        error -> System.err.println("Error: " + error), // onError - 에러 처리
 //        () -> System.out.println("Done") // onComplete - 완료 처리
 //    );
+	    
+	    // 요청이 완수되면 해당 이미지를 서버 로컬에 저장하는 단계
 	    String userHomeDir = System.getProperty("user.home");
 	    String imgDir = userHomeDir + File.separator + "Youngman";
 	    Path path = Paths.get(imgDir + File.separator + image.getOriginalFilename());
@@ -242,6 +279,7 @@ public class ReceiptService {
 	    os.write(image.getBytes());
 	    os.close();
 	    
+	    // 리턴된 영수증 데이터를 DB에 저장하고 프론트로 리턴하는 단계
 	    String documentId = receiptDocumentRepo.save(ReceiptDocument.builder()
 	    												.imgPath(path.toString())
 	    												.build()).getId();
@@ -260,6 +298,7 @@ public class ReceiptService {
 	    				.build();
 	    	receiptList.add(temp);
 	    }
+	    	    
 	    originReceiptRepository.saveAll(receiptList);
 	    return receiptList;
     }

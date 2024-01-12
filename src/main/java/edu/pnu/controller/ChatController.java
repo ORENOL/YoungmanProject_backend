@@ -1,7 +1,5 @@
 	package edu.pnu.controller;
 
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +9,6 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +21,6 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
-import edu.pnu.domain.dto.ChatLogUnReadDTO;
-import edu.pnu.domain.enums.IsLooked;
 import edu.pnu.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,7 +38,7 @@ public class ChatController {
 
     // 전역 채널로 메세지를 보냅니다.
     @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/private")
+    @SendTo("/topic/public")
     public ChatMessage sendMessageToGlobal(@Payload ChatMessage chatMessage) {
     	ChatMessage Message = chatService.sendMessageToGlobal(chatMessage);
         return Message;
@@ -108,11 +103,11 @@ public class ChatController {
     	return ResponseEntity.ok(log);
     }
     
-    @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
-    @PostMapping("/postGreeting")
-    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
-    	chatService.postGreeting(chatMessage, auth, headerAccessor);
-    	return ResponseEntity.ok(null);
-    }
+//    @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
+//    @PostMapping("/postGreeting")
+//    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
+//    	chatService.postGreeting(chatMessage, auth, headerAccessor);
+//    	return ResponseEntity.ok(null);
+//    }
     
 }

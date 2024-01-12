@@ -1,6 +1,5 @@
 package edu.pnu.service;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ScheduledFuture;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -19,15 +17,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.web.header.writers.frameoptions.StaticAllowFromStrategy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
-import edu.pnu.domain.dto.ChatLogUnReadDTO;
 import edu.pnu.domain.enums.IsLooked;
 import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
@@ -39,13 +34,11 @@ public class ChatService {
 	private SimpMessagingTemplate messagingTemplate;
 	private ChatLogRepository chatLogRepo;
 	private MongoTemplate mongoTemplate;
-	private TaskScheduler taskScheduler;
 	
-	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate, TaskScheduler taskScheduler) {
+	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate) {
 		this.messagingTemplate = messagingTemplate;
 		this.chatLogRepo = chatLogRepo;
 		this.mongoTemplate = mongoTemplate;
-		this.taskScheduler = taskScheduler;
 	}
 	
 	private static Map<String, List<String>> existingRoomId = new HashMap<>();
@@ -184,53 +177,53 @@ public class ChatService {
 		
 	}
 
-	public void postGreeting(ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
-		
-		String roomId = chatMessage.getRoomId();
-		
-    	ZonedDateTime sendTime = ZonedDateTime.now();
-		Date date = convertZonedDateTimeToDate(sendTime);
-		
-		ChatLog temp2 = ChatLog.builder()
-				.chatRoomId(roomId)
-				.content("유저가 존재하는 방입니다.")
-				.isLooked(IsLooked.FALSE)
-				.Sender(auth.getName())
-				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
-				.timeStamp(date)
-				.type(MessageType.JOIN)
-				.build();
-		
-		// 내가 들어간 방이 존재하면
-		if (existingRoomId.containsKey(roomId)) {
-			// 들어간 방에 알림을 보내고
-			messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp2);
-			// roomId딕셔너리에 자기 이름 추가하기
-			existingRoomId.get(roomId).add(auth.getName());
-			
-		// 내가 들어간 방이 존재하지 않으면
-		} else {
-			// roomId딕셔너리에 방을 추가하고 자기 이름 넣기
-			System.out.println("존재하지않으니 넣을게");
-			List<String> userList = new ArrayList<>();
-			userList.add(auth.getName());
-			existingRoomId.put(roomId, userList);
-		}
-		
-		System.out.println(existingRoomId.get(roomId).toString());
-		
-		
-		ChatLog temp = ChatLog.builder()
-				.chatRoomId(roomId)
-				.content(auth.getName() + "이(가) 입장했습니다.")
-				.isLooked(IsLooked.FALSE)
-				.Sender(auth.getName())
-				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
-				.timeStamp(date)
-				.type(MessageType.JOIN)
-				.build();
-//		messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp);
-	}
+//	public void postGreeting(ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
+//		
+//		String roomId = chatMessage.getRoomId();
+//		
+//    	ZonedDateTime sendTime = ZonedDateTime.now();
+//		Date date = convertZonedDateTimeToDate(sendTime);
+//		
+//		ChatLog temp2 = ChatLog.builder()
+//				.chatRoomId(roomId)
+//				.content("유저가 존재하는 방입니다.")
+//				.isLooked(IsLooked.FALSE)
+//				.Sender(auth.getName())
+//				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
+//				.timeStamp(date)
+//				.type(MessageType.JOIN)
+//				.build();
+//		
+//		// 내가 들어간 방이 존재하면
+//		if (existingRoomId.containsKey(roomId)) {
+//			// 들어간 방에 알림을 보내고
+//			messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp2);
+//			// roomId딕셔너리에 자기 이름 추가하기
+//			existingRoomId.get(roomId).add(auth.getName());
+//			
+//		// 내가 들어간 방이 존재하지 않으면
+//		} else {
+//			// roomId딕셔너리에 방을 추가하고 자기 이름 넣기
+//			System.out.println("존재하지않으니 넣을게");
+//			List<String> userList = new ArrayList<>();
+//			userList.add(auth.getName());
+//			existingRoomId.put(roomId, userList);
+//		}
+//		
+//		System.out.println(existingRoomId.get(roomId).toString());
+//		
+//		
+//		ChatLog temp = ChatLog.builder()
+//				.chatRoomId(roomId)
+//				.content(auth.getName() + "님이 입장했습니다.")
+//				.isLooked(IsLooked.FALSE)
+//				.Sender(auth.getName())
+//				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
+//				.timeStamp(date)
+//				.type(MessageType.JOIN)
+//				.build();
+////		messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp);
+//	}
 
 	public void handleDisconnectEvent(SessionDisconnectEvent event) {
 		
@@ -250,7 +243,7 @@ public class ChatService {
 		
 		ChatLog temp = ChatLog.builder()
 				.chatRoomId(roomId)
-				.content(userId + "이(가) 퇴장했습니다.")
+				.content(userId + "님이 퇴장했습니다.")
 				.isLooked(IsLooked.FALSE)
 				.Sender(userId)
 				.Receiver(roomId.replace(userId, "").replace("&", ""))
@@ -307,4 +300,5 @@ public class ChatService {
 		System.out.println(existingRoomId.get(roomId).toString());
 		
 	}
+	
 }
