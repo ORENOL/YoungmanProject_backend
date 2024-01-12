@@ -46,8 +46,9 @@ public class MemberController {
 	
 	@Operation(summary = "회원 탈퇴 (미구현)", description = "")
 	@DeleteMapping("deleteMember")
-	public ResponseEntity<?> deleteMember() {
-		return null;
+	public ResponseEntity<?> deleteMember(Authentication auth) {
+		memberService.deleteMember(auth);
+		return ResponseEntity.ok(null);
 	}
 	
 	@GetMapping("getOurMembers")

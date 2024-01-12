@@ -56,14 +56,16 @@ public class ReceiptService {
 	private OriginReceiptRepository originReceiptRepository;
 	private WebClient webclient;
 	private SimpMessagingTemplate messagingTemplate;
+	private NoticeService noticeService;
 	
-	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient, SimpMessagingTemplate messagingTemplate) {
+	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient, SimpMessagingTemplate messagingTemplate, NoticeService noticeService) {
 		this.receiptRepo = receiptRepo;
 		this.receiptDocumentRepo = receiptDocumentRepo;
 		this.originReceiptRepository = originReceiptRepository;
 		this.mongoTemplate = mongoTemplate;
 		this.webclient = webclient;
 		this.messagingTemplate = messagingTemplate;
+		this.noticeService = noticeService;
 	}
 
 	public Page<Receipt> getPageReceipt(int pageNo, int pageSize, String orderCriteria, String searchCriteria, String searchValue) throws ParseException {
@@ -194,17 +196,7 @@ public class ReceiptService {
 		
 		Receipt receiptId = receiptRepo.save(temp);
 		
-    	ZonedDateTime sendTime = ZonedDateTime.now();
-		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
-		
-	    ChatLog log = ChatLog.builder()
-	    					.content(auth.getName() + "님이 " + receipt.getCompanyName()+ "의 영수증을 업데이트했습니다.")
-	    					.Sender(auth.getName())
-	    					.timeStamp(date)
-	    					.type(MessageType.NOTICE)
-	    					.build();
-	    
-	    messagingTemplate.convertAndSend("/topic/public", log);
+		noticeService.saveAndNoticeLog(receipt, "업데이트", auth);
 	    
 		return receiptId.getReceiptId();
 	}
@@ -252,17 +244,8 @@ public class ReceiptService {
 		
 		if (receipt.isPresent()) {
 			receiptRepo.deleteById(receiptId.getReceiptId());
-	    	ZonedDateTime sendTime = ZonedDateTime.now();
-			Date date = ChatService.convertZonedDateTimeToDate(sendTime);
 			
-		    ChatLog log = ChatLog.builder()
-		    					.content(auth.getName() + "님이 " + receipt.get().getCompanyName()+ "의 영수증을 삭제했습니다.")
-		    					.Sender(auth.getName())
-		    					.timeStamp(date)
-		    					.type(MessageType.NOTICE)
-		    					.build();
-		    
-		    messagingTemplate.convertAndSend("/topic/public", log);
+			noticeService.saveAndNoticeLog(receipt.get(), "삭제", auth);
 			return;
 		}
 		throw new ResourceNotFoundException("not exist receipt");
