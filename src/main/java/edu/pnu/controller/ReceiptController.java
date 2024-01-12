@@ -77,8 +77,8 @@ public class ReceiptController {
 	
 	@Operation(summary = "지정된 영수증 정보를 삭제합니다.")
 	@DeleteMapping("/private/receipt/deleteReceipt")
-	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receiptId) {
-		receiptService.deleteBoard(receiptId);
+	public ResponseEntity<?> deleteBoard(@RequestBody Receipt receiptId, Authentication auth) {
+		receiptService.deleteBoard(receiptId, auth);
 		ApiResponse response = new ApiResponse("delete success");
 		return ResponseEntity.ok(response);
 	}

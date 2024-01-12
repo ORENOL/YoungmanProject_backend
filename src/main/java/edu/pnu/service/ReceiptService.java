@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -169,8 +170,29 @@ public class ReceiptService {
 		
 	}
 
+	@Transactional
 	public String saveReceipt(Receipt receipt, Authentication auth) {
-		Receipt receiptId = receiptRepo.save(receipt);
+		
+		Optional<Receipt> optionalExistReceipt = receiptRepo.findById(receipt.getReceiptId());
+		if(!optionalExistReceipt.isPresent()) {
+			throw new ResourceNotFoundException("not exist receiptId");
+		}
+		Receipt existReceipt = optionalExistReceipt.get();
+		
+		Receipt temp = Receipt.builder()
+				.receiptId(existReceipt.getReceiptId())
+				.companyName(receipt.getCompanyName())
+				.item(receipt.getItem())
+				.quantity(receipt.getQuantity())
+				.price(receipt.getPrice())
+				.unitPrice(receipt.getUnitPrice())
+				.tradeDate(receipt.getTradeDate())
+				.createDate(receipt.getCreateDate())
+				.receiptDocumentId(existReceipt.getReceiptDocumentId())
+				.originReceiptId(existReceipt.getOriginReceiptId())
+				.build();
+		
+		Receipt receiptId = receiptRepo.save(temp);
 		
     	ZonedDateTime sendTime = ZonedDateTime.now();
 		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
@@ -187,6 +209,7 @@ public class ReceiptService {
 		return receiptId.getReceiptId();
 	}
 	
+	@Transactional
 	public void saveListReceipt(List<Receipt> receipt, Authentication auth) {
 		List<Receipt> receiptList = new ArrayList<>();
 	    for (Receipt data : receipt) {
@@ -220,7 +243,8 @@ public class ReceiptService {
 		return;
 	}
 
-	public void deleteBoard(Receipt receiptId) {
+	@Transactional
+	public void deleteBoard(Receipt receiptId, Authentication auth) {
 		
 		System.out.println(receiptId.toString());
 
@@ -228,9 +252,19 @@ public class ReceiptService {
 		
 		if (receipt.isPresent()) {
 			receiptRepo.deleteById(receiptId.getReceiptId());
+	    	ZonedDateTime sendTime = ZonedDateTime.now();
+			Date date = ChatService.convertZonedDateTimeToDate(sendTime);
+			
+		    ChatLog log = ChatLog.builder()
+		    					.content(auth.getName() + "님이 " + receipt.get().getCompanyName()+ "의 영수증을 삭제했습니다.")
+		    					.Sender(auth.getName())
+		    					.timeStamp(date)
+		    					.type(MessageType.NOTICE)
+		    					.build();
+		    
+		    messagingTemplate.convertAndSend("/topic/public", log);
 			return;
 		}
-		
 		throw new ResourceNotFoundException("not exist receipt");
 		
 	}
@@ -239,6 +273,7 @@ public class ReceiptService {
 		return receiptRepo.findAll();
 	}
 
+	@Transactional
 	public List<OriginReceipt> runReceiptOCR(MultipartFile image) throws IllegalStateException, IOException {
 		
 		ByteArrayResource byteArrayResource = new ByteArrayResource(image.getBytes()) {
