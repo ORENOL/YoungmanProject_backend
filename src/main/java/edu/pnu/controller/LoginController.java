@@ -39,7 +39,7 @@ public class LoginController {
 	@PutMapping("/provideJWT")
 	public ResponseEntity<?> provideJWT() {
 
-		String token = JWT.create().withClaim("username", "OREN").sign(Algorithm.HMAC256("edu.pnu.jwt"));
+		String token = JWT.create().withClaim("username", "ORENOL").sign(Algorithm.HMAC256("edu.pnu.jwt"));
 
 		return ResponseEntity.ok("Bearer " + token);
 	}

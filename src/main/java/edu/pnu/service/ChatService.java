@@ -24,6 +24,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
+import edu.pnu.domain.dto.ChatLogUnReadDTO;
 import edu.pnu.domain.enums.IsLooked;
 import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
@@ -35,11 +36,13 @@ public class ChatService {
 	private SimpMessagingTemplate messagingTemplate;
 	private ChatLogRepository chatLogRepo;
 	private MongoTemplate mongoTemplate;
+	private NoticeService noticeService;
 	
-	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate) {
+	public ChatService(SimpMessagingTemplate messagingTemplate, ChatLogRepository chatLogRepo, MongoTemplate mongoTemplate, NoticeService noticeService) {
 		this.messagingTemplate = messagingTemplate;
 		this.chatLogRepo = chatLogRepo;
 		this.mongoTemplate = mongoTemplate;
+		this.noticeService = noticeService;
 	}
 	
 	private static Map<String, List<String>> existingRoomId = new HashMap<>();
@@ -64,13 +67,26 @@ public class ChatService {
     	messagingTemplate.convertAndSend("/topic/room/"+ chatMessage.getReceiver(), chatMessage);
 	}
 
-	public void sendMessageToRoom(ChatMessage chatMessage) {
+	public void sendMessageToRoom(ChatMessage chatMessage, Authentication auth) {
     	ZonedDateTime sendTime = ZonedDateTime.now();
     	chatMessage.setTimeStamp(sendTime);
     	ChatLog log = saveChatLog(chatMessage);
     	System.out.println(chatMessage.toString());
     	messagingTemplate.convertAndSend("/topic/room/"+ chatMessage.getRoomId(), log);
     	messagingTemplate.convertAndSend("/topic/lobby/"+ chatMessage.getReceiver(), log);
+    	System.out.println(existingRoomId.get(chatMessage.getRoomId()));
+    	if(!existingRoomId.get(chatMessage.getRoomId()).contains(chatMessage.getReceiver())) {
+        	ChatLogUnReadDTO temp = ChatLogUnReadDTO.builder()
+					.chatRoomId(log.getChatRoomId())
+					.content(log.getContent())
+					.Sender(log.getSender())
+					.timeStamp(log.getTimeStamp())
+					.type(MessageType.CHAT)
+					.unReadMessage(Integer.parseInt(getSumUnReadMessage(chatMessage.getReceiver())))
+					.build();
+        	messagingTemplate.convertAndSend("/topic/main/"+ chatMessage.getReceiver(), temp);
+    	}
+
 	}
 	
 	public ChatLog saveChatLog(ChatMessage chatMessage) {
@@ -142,7 +158,7 @@ public class ChatService {
 
 	}
 	
-	public List<Map> findUnReadMessageForRoomId(Authentication auth) {
+	public List<Map> getCountUnReadMessage(Authentication auth) {
         Criteria criteria = new Criteria();
 //		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), );
 		criteria.andOperator(Criteria.where("isLooked").is("FALSE"), Criteria.where("Receiver").is(auth.getName()));
@@ -157,6 +173,29 @@ public class ChatService {
             );
 
         return unreadCount.getMappedResults();
+	}
+	
+	public String getSumUnReadMessage(String username) {
+		Criteria criteria = new Criteria();
+
+		criteria.andOperator(Criteria.where("isLooked").is("FALSE"), Criteria.where("Receiver").is(username));
+
+        Aggregation aggregation = Aggregation.newAggregation(
+	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 중 읽지 않은 메세지 필터링
+	            Aggregation.count().as("unreadMessages") // 각 그룹의 로그 갯수
+	        );
+        
+        AggregationResults<Map> unreadCount = mongoTemplate.aggregate(
+                aggregation, "chatLog", Map.class
+            );
+        
+        String sumCounts = "0";
+        System.out.println("야:"+unreadCount.getMappedResults().toString().length());
+        if(unreadCount != null && !unreadCount.getMappedResults().isEmpty()) {
+        	sumCounts = unreadCount.getMappedResults().get(0).get("unreadMessages").toString();
+        }
+        
+        return sumCounts;
 	}
 
 	public ChatLog updateIsLooked(ChatLog chatLog, Authentication auth) {
@@ -264,7 +303,7 @@ public class ChatService {
 		
 	}
 
-	public void sendInfoToSession(SimpMessageHeaderAccessor accessor) {
+	public void sendInfoToSession(SimpMessageHeaderAccessor accessor, Authentication auth) {
 		
         String roomId = accessor.getSessionAttributes().get("roomId").toString();
         String userId = accessor.getSessionAttributes().get("userId").toString();
@@ -300,6 +339,22 @@ public class ChatService {
 		
 		System.out.println(existingRoomId.get(roomId).toString());
 		
+		messagingTemplate.convertAndSend("/topic/main/"+userId, getSumUnReadMessage(userId));
+		
 	}
+
+	public void handleConnectEvent(SessionConnectEvent event) {
+	       StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+	       String username = headerAccessor.getFirstNativeHeader("Authorization");
+	        // Principal 객체에서 사용자 정보 추출
+	       System.out.println("jwt: " + username);
+	        if (username != null) {
+	            // 사용자 이름을 사용하여 필요한 작업 수행
+	            messagingTemplate.convertAndSend("/topic/main/"+username, "메세지: " + getSumUnReadMessage(username)+"\n알림: "+noticeService.getNoticeLogsCounts(username));
+	        }
+		
+	}
+
+
 	
 }

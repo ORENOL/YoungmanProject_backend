@@ -11,7 +11,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +21,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
 import edu.pnu.domain.ChatMessage;
+import edu.pnu.domain.dto.ApiResponse;
 import edu.pnu.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -53,18 +53,23 @@ public class ChatController {
     
     // 1:1 채널에 메세지를 보냅니다.
     @MessageMapping("/chat.sendMessageToRoom")
-    public void sendMessageToRoom(@Payload ChatMessage chatMessage) {
-    	chatService.sendMessageToRoom(chatMessage);
+    public void sendMessageToRoom(@Payload ChatMessage chatMessage, Authentication auth) {
+    	chatService.sendMessageToRoom(chatMessage, auth);
     }	
     
     @MessageMapping("/chat.setRoomId")
-    public void sendInfoToSession(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor accessor) {
+    public void sendInfoToSession(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor accessor, Authentication auth) {
     	System.out.println("hi");
     	accessor.getSessionAttributes().put("roomId", chatMessage.getRoomId());
     	accessor.getSessionAttributes().put("userId", chatMessage.getSender());
     	String test = accessor.getSessionAttributes().get("roomId").toString();
-    	chatService.sendInfoToSession(accessor);
+    	chatService.sendInfoToSession(accessor, auth);
     	System.out.println(test);
+    }
+    
+    @MessageMapping("/main.setUserId")
+    public void sendInfoToSession(SimpMessageHeaderAccessor accessor, Authentication auth) {
+    	accessor.getSessionAttributes().put("userId", auth.getName());
     }
     
     
@@ -73,7 +78,12 @@ public class ChatController {
         chatService.handleDisconnectEvent(event);
     }
     
-    @Operation(description = "1:1 채널의 채팅 로그를 가져옵니다.")
+//    @EventListener
+//    public void handleConnectEvent(SessionConnectEvent event) {
+//    	chatService.handleConnectEvent(event);
+//    }
+    
+    @Operation(summary = "채팅방의 모든 채팅 로그 가져오기", description = "1:1 채널의 채팅 로그를 가져옵니다.")
     @GetMapping("/getChatLogsByRoomId")
     public ResponseEntity<?> getChatLogsByRoomId(@RequestParam String chatRoomId, Authentication auth) {
     	long startTime = System.nanoTime();
@@ -83,21 +93,28 @@ public class ChatController {
     	return ResponseEntity.ok(logList);
     }
 
-    @Operation(description = "사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.")
+    @Operation(summary = "마지막 채팅 조회", description = "사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.")
     @GetMapping("/getLastChatLog")
     public ResponseEntity<?> getLasChatLog(Authentication auth) {
     	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth);
     	return ResponseEntity.ok(logList);
     }
     
-    @Operation(description = "사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.")
+    @Operation(summary = "읽지 않은 메세지 수 조회", description = "사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.")
     @GetMapping("/getCountUnReadMessage")
-    public ResponseEntity<?> findUnReadMessageForRoomIdd(Authentication auth) {
-    	List<Map> logList = chatService.findUnReadMessageForRoomId(auth);
+    public ResponseEntity<?> getCountUnReadMessage(Authentication auth) {
+    	List<Map> logList = chatService.getCountUnReadMessage(auth);
     	return ResponseEntity.ok(logList);
     }
     
-    @Operation(description = "접속중인 사용자가 상대방의 메세지를 읽으면 메세지 상태를 읽음으로 업데이트합니다.")
+    @Operation(summary = "모든 읽지 않은 메세지 수 총합 조회", description = "사용자의 모든 채널의 읽지 않은 메세지 수의 총합을 가져옵니다.")
+    @GetMapping("/getSumUnReadMessage")
+    public ResponseEntity<?> getSumUnReadMessage(Authentication auth) {
+    	String sumCounts = chatService.getSumUnReadMessage(auth.getName());
+    	return ResponseEntity.ok(new ApiResponse(sumCounts));
+    }
+    
+    @Operation(summary = "메세지 읽음 처리", description = "접속중인 사용자가 상대방의 메세지를 읽으면 메세지 상태를 읽음으로 업데이트합니다.")
     @PutMapping("/updateIsLooked")
 	public ResponseEntity<?> updateIsLooked(@RequestBody ChatLog chatLog, Authentication auth) {
     	ChatLog log = chatService.updateIsLooked(chatLog, auth);

@@ -4,6 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
@@ -11,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.NoticeLog;
 import edu.pnu.domain.Receipt;
+import edu.pnu.domain.dto.ChatLogUnReadDTO;
 import edu.pnu.domain.enums.MessageType;
+import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.NoticeLogRepository;
 
 @Service
@@ -28,6 +31,18 @@ public class NoticeService {
 	public List<NoticeLog> getNoticeLogs() {
 		List<NoticeLog> list = noticeLogRepo.findAll();
 		return list; 
+	}
+	
+	public String getNoticeLogsCounts(Authentication auth) {
+		
+		String sumCounts = noticeLogRepo.countByUserHistoryNot(auth.getName());
+
+		return sumCounts;
+	}
+	
+	public String getNoticeLogsCounts(String username) {
+		String sumCounts = noticeLogRepo.countByUserHistoryNot(username);
+		return sumCounts;
 	}
 	
 	public void saveAndNoticeLog(Receipt receipt, String status, Authentication auth) {
@@ -48,16 +63,38 @@ public class NoticeService {
 		noticeLogRepo.save(log);
 	    
 	    messagingTemplate.convertAndSend("/topic/public", log);
-		
+	    
 		return;
 	}
+	
+	
 
 	public NoticeLog updateUserHistoryInLog(NoticeLog log, Authentication auth) {
-		System.out.println(log.toString());
 		List<String> list = log.getUserHistory();
 		list.add(auth.getName());
 		log.setUserHistory(list);
 		return noticeLogRepo.save(log);
 	}
+
+	public List<NoticeLog> updateUserHistoryInAllLog(Authentication auth) {
+		Optional<List<NoticeLog>> logList = noticeLogRepo.findByUserHistoryNot(auth.getName());
+		
+		if(logList.isEmpty()) {
+			throw new ResourceNotFoundException("not exist log");
+		}
+		
+		List<NoticeLog> temp = new ArrayList<>();
+		
+		for (NoticeLog log : logList.get()) {
+			List<String> userList = log.getUserHistory();
+			userList.add(auth.getName());
+			log.setUserHistory(userList);
+			temp.add(log);
+		}
+		
+		return noticeLogRepo.saveAll(temp);
+	}
+
+
 
 }

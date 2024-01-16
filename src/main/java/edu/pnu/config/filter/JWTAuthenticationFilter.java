@@ -10,6 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -65,7 +66,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String token = JWT.create()
 						.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
 						.withClaim("username", user.getUsername())
-						.sign(Algorithm.HMAC256(secretKey));
+						.sign(Algorithm.HMAC256("edu.pnu.jwt"));
 				response.addHeader("Authorization", "Bearer " + token);
 				response.addHeader("Username", user.getUsername());
 				response.addHeader("Role", user.getAuthorities().toString());
