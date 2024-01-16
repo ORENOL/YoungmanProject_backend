@@ -3,6 +3,7 @@ package edu.pnu.config.filter;
 import java.io.IOException;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -28,6 +29,9 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	public JWTAuthenticationFilter(AuthenticationManager authenticationManager) {
 		this.authenticationManager = authenticationManager;
 	}
+	
+	@Value("${jwt_secret_key}")
+	private String secretKey;
 	
 	// POST/login 요청이 왔을 때 인증을 시도하는 메서드
 	@Override
@@ -61,7 +65,7 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String token = JWT.create()
 						.withExpiresAt(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
 						.withClaim("username", user.getUsername())
-						.sign(Algorithm.HMAC256("edu.pnu.jwt"));
+						.sign(Algorithm.HMAC256(secretKey));
 				response.addHeader("Authorization", "Bearer " + token);
 				response.addHeader("Username", user.getUsername());
 				response.addHeader("Role", user.getAuthorities().toString());
