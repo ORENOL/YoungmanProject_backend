@@ -60,8 +60,9 @@ public class MemberService {
 		List<Member> list;
 		
 		
-
-		System.out.println(auth.getPrincipal());
+		System.out.println(searchCriteria);
+		System.out.println(searchValue);
+		
 		if (searchCriteria == null) {
 			list = memberRepo.findByAssociation(memberRepo.findById(auth.getName()).get().getAssociation());
 			return list;
@@ -87,7 +88,7 @@ public class MemberService {
 		}
 		
 		list = mongoTemplate.find(query, Member.class);
-
+		System.out.println(list);
 		return list;	
 	}
 

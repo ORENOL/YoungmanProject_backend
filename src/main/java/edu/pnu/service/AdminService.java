@@ -102,17 +102,17 @@ public class AdminService {
 
 	public void deleteOurMember(Member member, Authentication auth) {
 		
-		Optional<Member> existingMember = memberRepo.findById(auth.getName());
+		Optional<Member> OptionalExistMember = memberRepo.findById(member.getUsername());
+		Optional<Member> OptionalAdmin = memberRepo.findById(auth.getName());
 		
-		if (!existingMember.isPresent()) {
+		if (OptionalExistMember.isEmpty() && OptionalAdmin.isEmpty()) {
 			throw new ResourceNotFoundException("not exist member");
 		}
 		
-		Member existMember = existingMember.get();
+		Member existMember = OptionalExistMember.get();
+		Member admin = OptionalAdmin.get();
 		
-		AssociationCode memberAssociation = member.getAssociation();
-		
-		if(!existMember.getAssociation().equals(memberAssociation)) {
+		if(!existMember.getAssociation().getCode().equals(admin.getAssociation().getCode())) {
 			throw new NotAcceptableStatusException("not your member");
 		}
 		
