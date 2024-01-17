@@ -140,9 +140,16 @@ public class ChatService {
 	        return results.getMappedResults();
 	    }
 	
-	public List<ChatLog> findLastMessagesForRoomId(Authentication auth) {
+	public List<ChatLog> findLastMessagesForRoomId(Authentication auth, String searchValue) {
 		Criteria criteria = new Criteria();
-		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), Criteria.where("Receiver").is(auth.getName()));
+		
+		if(searchValue == null) {
+			criteria.orOperator(Criteria.where("Sender").is(auth.getName()), Criteria.where("Receiver").is(auth.getName()));
+		} else {
+			// 유저 및 상대방이 포함된 채팅방 찾기
+			criteria.orOperator(Criteria.where("Sender").is(auth.getName()).and("Receiver").regex(searchValue, "i"), Criteria.where("Sender").regex(searchValue, "i").and("Receiver").is(auth.getName())); 
+
+		}
 		
 	    Aggregation aggregation = Aggregation.newAggregation(
 	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 필터링
@@ -158,11 +165,15 @@ public class ChatService {
 
 	}
 	
-	public List<Map> getCountUnReadMessage(Authentication auth) {
+	public List<Map> getCountUnReadMessage(Authentication auth, String searchValue) {
         Criteria criteria = new Criteria();
-//		criteria.orOperator(Criteria.where("Sender").is(auth.getName()), );
-		criteria.andOperator(Criteria.where("isLooked").is("FALSE"), Criteria.where("Receiver").is(auth.getName()));
 
+        if(searchValue == null) {
+        	criteria.andOperator(Criteria.where("isLooked").is("FALSE"), Criteria.where("Receiver").is(auth.getName()));
+        } else {
+        	criteria.andOperator(Criteria.where("isLooked").is("FALSE"), Criteria.where("Receiver").is(auth.getName()), Criteria.where("Sender").regex(searchValue, "i"));
+        }
+        
         Aggregation aggregation = Aggregation.newAggregation(
 	            Aggregation.match(criteria), // 사용자가 포함된 채팅로그 중 읽지 않은 메세지 필터링
 	            Aggregation.group("chatRoomId").count().as("unreadMessages") // 각 그룹의 로그 갯수
@@ -174,7 +185,7 @@ public class ChatService {
 
         return unreadCount.getMappedResults();
 	}
-	
+
 	public String getSumUnReadMessage(String username) {
 		Criteria criteria = new Criteria();
 

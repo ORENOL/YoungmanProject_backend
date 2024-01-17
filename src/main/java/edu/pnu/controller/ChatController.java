@@ -95,15 +95,15 @@ public class ChatController {
 
     @Operation(summary = "마지막 채팅 조회", description = "사용자의 모든 채널의 마지막 채팅 로그를 가져옵니다.")
     @GetMapping("/getLastChatLog")
-    public ResponseEntity<?> getLasChatLog(Authentication auth) {
-    	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth);
+    public ResponseEntity<?> getLasChatLog(Authentication auth, @RequestParam(required = false) String searchValue) {
+    	List<ChatLog> logList = chatService.findLastMessagesForRoomId(auth, searchValue);
     	return ResponseEntity.ok(logList);
     }
     
     @Operation(summary = "읽지 않은 메세지 수 조회", description = "사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.")
     @GetMapping("/getCountUnReadMessage")
-    public ResponseEntity<?> getCountUnReadMessage(Authentication auth) {
-    	List<Map> logList = chatService.getCountUnReadMessage(auth);
+    public ResponseEntity<?> getCountUnReadMessage(Authentication auth, @RequestParam(required = false) String searchValue) {
+    	List<Map> logList = chatService.getCountUnReadMessage(auth, searchValue);
     	return ResponseEntity.ok(logList);
     }
     
