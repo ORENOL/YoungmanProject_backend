@@ -72,6 +72,7 @@ public class ReceiptService {
 		
 		Sort sort = Sort.by(Sort.Order.desc(orderCriteria));
 		PageRequest pageable = PageRequest.of(pageNo, pageSize, sort);
+		System.out.println(searchCriteria);
 		System.out.println(searchValue);
 		
 		if (searchValue == null) {
@@ -216,20 +217,25 @@ public class ReceiptService {
 	    				.receiptDocumentId(data.getReceiptDocumentId())
 	    				.originReceiptId(data.getReceiptId())
 	    				.build();
+	    	
+	    	
+	    	
 	    	receiptList.add(temp);
 	    }
 	    
-    	ZonedDateTime sendTime = ZonedDateTime.now();
-		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
-		
-	    ChatLog log = ChatLog.builder()
-	    					.content(auth.getName() + "님이 " + receiptList.get(0).getCompanyName()+ "의 영수증을 등록했습니다.")
-	    					.Sender(auth.getName())
-	    					.timeStamp(date)
-	    					.type(MessageType.NOTICE)
-	    					.build();
+	    noticeService.saveAndNoticeLog(receipt.get(0), "생성", auth);
 	    
-	    messagingTemplate.convertAndSend("/topic/public", log);
+//    	ZonedDateTime sendTime = ZonedDateTime.now();
+//		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
+//		
+//	    ChatLog log = ChatLog.builder()
+//	    					.content(auth.getName() + "님이 " + receiptList.get(0).getCompanyName()+ "의 영수증을 등록했습니다.")
+//	    					.Sender(auth.getName())
+//	    					.timeStamp(date)
+//	    					.type(MessageType.NOTICE)
+//	    					.build();
+//	    
+//	    messagingTemplate.convertAndSend("/topic/public", log);
 	    
 		receiptRepo.saveAll(receiptList);
 		return;
