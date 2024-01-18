@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import edu.pnu.domain.ChatLog;
@@ -51,12 +50,13 @@ public class ChatController {
     	chatService.inviteUser(chatMessage);
     }
     
-    // 1:1 채널에 메세지를 보냅니다.
+    // 채팅방에 메세지를 보냅니다.
     @MessageMapping("/chat.sendMessageToRoom")
     public void sendMessageToRoom(@Payload ChatMessage chatMessage, Authentication auth) {
     	chatService.sendMessageToRoom(chatMessage, auth);
     }	
     
+    // 채팅방 입장시 웹소켓 세션에 채팅방Id 및 유저Id를 저장합니다.
     @MessageMapping("/chat.setRoomId")
     public void sendInfoToSession(@Payload ChatMessage chatMessage, SimpMessageHeaderAccessor accessor, Authentication auth) {
     	System.out.println("hi");
@@ -67,21 +67,17 @@ public class ChatController {
     	System.out.println(test);
     }
     
+    // 웹소켓 연결시 유저Id를 저장합니다.
     @MessageMapping("/main.setUserId")
     public void sendInfoToSession(SimpMessageHeaderAccessor accessor, Authentication auth) {
     	accessor.getSessionAttributes().put("userId", auth.getName());
     }
     
-    
+    // 채팅방을 나가서 웹소켓 세션이 종료되면 상대방에게 채팅 종료 신호를 보냅니다.
     @EventListener
     public void handleDisconnectEvent(SessionDisconnectEvent event) {
         chatService.handleDisconnectEvent(event);
     }
-    
-//    @EventListener
-//    public void handleConnectEvent(SessionConnectEvent event) {
-//    	chatService.handleConnectEvent(event);
-//    }
     
     @Operation(summary = "채팅방의 모든 채팅 로그 가져오기", description = "1:1 채널의 채팅 로그를 가져옵니다.")
     @GetMapping("/getChatLogsByRoomId")
@@ -100,7 +96,8 @@ public class ChatController {
     	return ResponseEntity.ok(logList);
     }
     
-    @Operation(summary = "읽지 않은 메세지 수 조회", description = "사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.")
+    @SuppressWarnings("rawtypes")
+	@Operation(summary = "읽지 않은 메세지 수 조회", description = "사용자의 모든 채널의 읽지 않은 메세지 수를 가져옵니다.")
     @GetMapping("/getCountUnReadMessage")
     public ResponseEntity<?> getCountUnReadMessage(Authentication auth, @RequestParam(required = false) String searchValue) {
     	List<Map> logList = chatService.getCountUnReadMessage(auth, searchValue);
@@ -120,12 +117,5 @@ public class ChatController {
     	ChatLog log = chatService.updateIsLooked(chatLog, auth);
     	return ResponseEntity.ok(log);
     }
-    
-//    @Operation(description = "접속시 채팅창에 입장 메세지를 보냅니다.")
-//    @PostMapping("/postGreeting")
-//    public ResponseEntity<?> postGreeting(@RequestBody ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
-//    	chatService.postGreeting(chatMessage, auth, headerAccessor);
-//    	return ResponseEntity.ok(null);
-//    }
     
 }

@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,12 +33,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import edu.pnu.domain.ChatLog;
-import edu.pnu.domain.ChatMessage;
 import edu.pnu.domain.OriginReceipt;
 import edu.pnu.domain.Receipt;
 import edu.pnu.domain.ReceiptDocument;
-import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.OriginReceiptRepository;
 import edu.pnu.persistence.ReceiptDocumentRepository;
@@ -55,16 +50,14 @@ public class ReceiptService {
 	private ReceiptDocumentRepository receiptDocumentRepo;
 	private OriginReceiptRepository originReceiptRepository;
 	private WebClient webclient;
-	private SimpMessagingTemplate messagingTemplate;
 	private NoticeService noticeService;
 	
-	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient, SimpMessagingTemplate messagingTemplate, NoticeService noticeService) {
+	public ReceiptService(ReceiptRepository receiptRepo, ReceiptDocumentRepository receiptDocumentRepo, OriginReceiptRepository originReceiptRepository, MongoTemplate mongoTemplate, WebClient webclient, NoticeService noticeService) {
 		this.receiptRepo = receiptRepo;
 		this.receiptDocumentRepo = receiptDocumentRepo;
 		this.originReceiptRepository = originReceiptRepository;
 		this.mongoTemplate = mongoTemplate;
 		this.webclient = webclient;
-		this.messagingTemplate = messagingTemplate;
 		this.noticeService = noticeService;
 	}
 
@@ -225,18 +218,6 @@ public class ReceiptService {
 	    
 	    noticeService.saveAndNoticeLog(receipt.get(0), "생성", auth);
 	    
-//    	ZonedDateTime sendTime = ZonedDateTime.now();
-//		Date date = ChatService.convertZonedDateTimeToDate(sendTime);
-//		
-//	    ChatLog log = ChatLog.builder()
-//	    					.content(auth.getName() + "님이 " + receiptList.get(0).getCompanyName()+ "의 영수증을 등록했습니다.")
-//	    					.Sender(auth.getName())
-//	    					.timeStamp(date)
-//	    					.type(MessageType.NOTICE)
-//	    					.build();
-//	    
-//	    messagingTemplate.convertAndSend("/topic/public", log);
-	    
 		receiptRepo.saveAll(receiptList);
 		return;
 	}
@@ -278,17 +259,9 @@ public class ReceiptService {
         .contentType(MediaType.MULTIPART_FORM_DATA)
         .body(BodyInserters.fromMultipartData("image", byteArrayResource))
         .retrieve()
-        .bodyToFlux(OriginReceipt.class);
+        .bodyToFlux(OriginReceipt.class);	
 		
 	    List<OriginReceipt> receipts = imageText.collectList().block();
-
-//		imageText.subscribe(
-//        item -> System.out.println(
-//        		item.toString()),
-////        		Receipt.builder().item(item.getItem()).quantity(item.getQuantity()).unitPrice(item.getUnitPrice()).price(item.getPrice()).tradeDate(LocalDateTime.parse(item.getTradeDate()))), // onNext - 데이터 처리
-//        error -> System.err.println("Error: " + error), // onError - 에러 처리
-//        () -> System.out.println("Done") // onComplete - 완료 처리
-//    );
 	    
 	    // 요청이 완수되면 해당 이미지를 서버 로컬에 저장하는 단계
 	    String userHomeDir = System.getProperty("user.home");

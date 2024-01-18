@@ -165,6 +165,7 @@ public class ChatService {
 
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public List<Map> getCountUnReadMessage(Authentication auth, String searchValue) {
         Criteria criteria = new Criteria();
 
@@ -186,6 +187,7 @@ public class ChatService {
         return unreadCount.getMappedResults();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public String getSumUnReadMessage(String username) {
 		Criteria criteria = new Criteria();
 
@@ -196,7 +198,7 @@ public class ChatService {
 	            Aggregation.count().as("unreadMessages") // 각 그룹의 로그 갯수
 	        );
         
-        AggregationResults<Map> unreadCount = mongoTemplate.aggregate(
+		AggregationResults<Map> unreadCount = mongoTemplate.aggregate(
                 aggregation, "chatLog", Map.class
             );
         
@@ -227,54 +229,6 @@ public class ChatService {
 		return chatLogRepo.save(log);
 		
 	}
-
-//	public void postGreeting(ChatMessage chatMessage, Authentication auth, SimpMessageHeaderAccessor headerAccessor) {
-//		
-//		String roomId = chatMessage.getRoomId();
-//		
-//    	ZonedDateTime sendTime = ZonedDateTime.now();
-//		Date date = convertZonedDateTimeToDate(sendTime);
-//		
-//		ChatLog temp2 = ChatLog.builder()
-//				.chatRoomId(roomId)
-//				.content("유저가 존재하는 방입니다.")
-//				.isLooked(IsLooked.FALSE)
-//				.Sender(auth.getName())
-//				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
-//				.timeStamp(date)
-//				.type(MessageType.JOIN)
-//				.build();
-//		
-//		// 내가 들어간 방이 존재하면
-//		if (existingRoomId.containsKey(roomId)) {
-//			// 들어간 방에 알림을 보내고
-//			messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp2);
-//			// roomId딕셔너리에 자기 이름 추가하기
-//			existingRoomId.get(roomId).add(auth.getName());
-//			
-//		// 내가 들어간 방이 존재하지 않으면
-//		} else {
-//			// roomId딕셔너리에 방을 추가하고 자기 이름 넣기
-//			System.out.println("존재하지않으니 넣을게");
-//			List<String> userList = new ArrayList<>();
-//			userList.add(auth.getName());
-//			existingRoomId.put(roomId, userList);
-//		}
-//		
-//		System.out.println(existingRoomId.get(roomId).toString());
-//		
-//		
-//		ChatLog temp = ChatLog.builder()
-//				.chatRoomId(roomId)
-//				.content(auth.getName() + "님이 입장했습니다.")
-//				.isLooked(IsLooked.FALSE)
-//				.Sender(auth.getName())
-//				.Receiver(roomId.replace(auth.getName(), "").replace("&", ""))
-//				.timeStamp(date)
-//				.type(MessageType.JOIN)
-//				.build();
-////		messagingTemplate.convertAndSend("/topic/room/"+ roomId, temp);
-//	}
 
 	public void handleDisconnectEvent(SessionDisconnectEvent event) {
 		

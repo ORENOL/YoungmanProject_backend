@@ -34,7 +34,7 @@ public class LoginController {
 		return ResponseEntity.ok().build();
 	}
 
-	// 개발 전용 api입니다.
+	// 개발 단계 전용 api입니다. 배포시 삭제 예정. 
 	@Operation(summary = "Swagger 테스트용 JWT 발급 API", description = "Try it out -> Execute 이후 발급된 JWT코드를 우측 상단의 Authorize에 입력하세요.")
 	@PutMapping("/provideJWT")
 	public ResponseEntity<?> provideJWT() {

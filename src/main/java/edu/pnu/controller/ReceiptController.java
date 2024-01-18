@@ -54,13 +54,6 @@ public class ReceiptController {
 		return ResponseEntity.ok(page);
 	}
 	
-//	// 하나의 영수증을 가져옴
-//	@GetMapping("getReceipt")
-//	public ResponseEntity<?> getReceipt() {
-//		Receipt receipt = receiptService.getReceipt();
-//		return ResponseEntity.ok().build();
-//	}
-	
 	@Operation(summary = "영수증 정보를 생성하거나 업데이트합니다.")
 	@PostMapping("/private/receipt/saveReceipt")
 	public ResponseEntity<?> saveReceipt(@RequestBody Receipt receipt, Authentication auth) {

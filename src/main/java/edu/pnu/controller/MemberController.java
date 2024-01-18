@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,13 +41,6 @@ public class MemberController {
 	public ResponseEntity<?> changeAuthority(@RequestBody Member member, Authentication authentication) {
 		memberService.changeAuthority(member, authentication);
 		return  ResponseEntity.ok("authority changed");
-	}
-	
-	@Operation(summary = "회원 탈퇴 (미구현)", description = "")
-	@DeleteMapping("deleteMember")
-	public ResponseEntity<?> deleteMember(Authentication auth) {
-		memberService.deleteMember(auth);
-		return ResponseEntity.ok(null);
 	}
 	
 	@GetMapping("getOurMembers")

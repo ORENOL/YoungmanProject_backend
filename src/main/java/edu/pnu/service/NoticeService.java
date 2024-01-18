@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import edu.pnu.domain.NoticeLog;
 import edu.pnu.domain.Receipt;
-import edu.pnu.domain.dto.ChatLogUnReadDTO;
 import edu.pnu.domain.enums.MessageType;
 import edu.pnu.exception.ResourceNotFoundException;
 import edu.pnu.persistence.NoticeLogRepository;

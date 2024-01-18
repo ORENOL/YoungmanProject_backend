@@ -1,47 +1,24 @@
 package edu.pnu;
 
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import edu.pnu.domain.ChatLog;
-import edu.pnu.domain.Member;
-import edu.pnu.domain.Receipt;
-import edu.pnu.domain.enums.IsLooked;
-import edu.pnu.persistence.AssociationCodeRepository;
-import edu.pnu.persistence.ChatLogRepository;
-import edu.pnu.persistence.MemberRepository;
-import edu.pnu.persistence.ReceiptRepository;
-import edu.pnu.service.ChatService;
 
 @SpringBootTest
 public class MongodbTest {
 
-	@Autowired
-	private ReceiptRepository receiptRepo;
-	
-	@Autowired
-	private MemberRepository memberRepo;
-	
-	@Autowired
-	private PasswordEncoder encoder;
-	
-	@Autowired
-	private AssociationCodeRepository assoRepo;
-	
-	@Autowired
-	private ChatLogRepository chatLogRepo;
+//	@Autowired
+//	private ReceiptRepository receiptRepo;
+//	
+//	@Autowired
+//	private MemberRepository memberRepo;
+//	
+//	@Autowired
+//	private PasswordEncoder encoder;
+//	
+//	@Autowired
+//	private AssociationCodeRepository assoRepo;
+//	
+//	@Autowired
+//	private ChatLogRepository chatLogRepo;
 	
 //    public static String generateRandomHangul(int length) {
 //        StringBuilder sb = new StringBuilder();
