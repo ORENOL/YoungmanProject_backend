@@ -39,9 +39,6 @@ public class AdminService {
 	public List<Member> getOurMembers(Authentication auth, String searchCriteria, String searchValue) {
 		List<Member> list;
 		
-		
-
-		System.out.println(auth.getPrincipal());
 		if (searchCriteria == null) {
 			list = memberRepo.findByAssociation(memberRepo.findById(auth.getName()).get().getAssociation());
 			return list;
@@ -62,12 +59,15 @@ public class AdminService {
 		
 		if (searchCriteria.equals("username&role")) {
 			String[] keyword = searchValue.split("&");
-			criteria.andOperator(Criteria.where("username").regex(keyword[0]), Criteria.where("role").regex(keyword[1]));
+			criteria.andOperator(Criteria.where("username").regex(keyword[0], "i"), Criteria.where("role").regex(keyword[1], "i"));
 			query.addCriteria(criteria);
 		}
 		
 		list = mongoTemplate.find(query, Member.class);
 
+		System.out.println(searchCriteria);
+		System.out.println(searchValue);
+		System.out.println(list);
 		return list;
 	}
 
