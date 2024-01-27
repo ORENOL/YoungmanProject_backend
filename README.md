@@ -17,3 +17,6 @@
 
 ## Use Diagram
 ![Use case diagram](https://github.com/ORENOL/YoungmanProject_backend/assets/141015530/3169c93d-1450-4103-9a51-fe3867a62b9c)
+
+## ERD
+![Youngman MongoDB ERD](https://github.com/ORENOL/YoungmanProject_backend/assets/141015530/80babca0-252e-4869-84fc-e6581dec4028)
