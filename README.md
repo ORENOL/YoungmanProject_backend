@@ -13,7 +13,7 @@
 - 언어: Java
 - 프레임워크: Springboot
 - 데이터베이스: MongoDB(NoSQL)
-- 기타:.
+- 기타:
 
 ## Use Diagram
 ![Use case diagram](https://github.com/ORENOL/YoungmanProject_backend/assets/141015530/3169c93d-1450-4103-9a51-fe3867a62b9c)
